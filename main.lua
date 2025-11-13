@@ -24,6 +24,8 @@ function SeizureUI:CreateWindow(config)
 	Window.Author = Window.Config.Author or "inspired by windui"
 	Window.Tabs = {}
 	Window.CurrentTab = nil
+	Window.MinSize = Vector2.new(500, 300)
+	Window.MaxSize = Vector2.new(900, 600)
 	
 	local ScreenGui = Instance.new("ScreenGui")
 	ScreenGui.Name = "SeizureUI"
@@ -129,6 +131,50 @@ function SeizureUI:CreateWindow(config)
 	ContentContainer.Position = UDim2.new(0.22, 0, 0.143, 0)
 	ContentContainer.Size = UDim2.new(0, 492, 0, 320)
 	
+	local ResizeHandle = Instance.new("Frame")
+	ResizeHandle.Name = "ResizeHandle"
+	ResizeHandle.Parent = Background
+	ResizeHandle.AnchorPoint = Vector2.new(1, 1)
+	ResizeHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	ResizeHandle.BackgroundTransparency = 0.95
+	ResizeHandle.BorderSizePixel = 0
+	ResizeHandle.Position = UDim2.new(1, 0, 1, 0)
+	ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+	
+	local ResizeCorner = Instance.new("UICorner")
+	ResizeCorner.CornerRadius = UDim.new(0, 4)
+	ResizeCorner.Parent = ResizeHandle
+	
+	local resizing = false
+	local resizeStart, startSize
+	
+	ResizeHandle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			resizing = true
+			resizeStart = input.Position
+			startSize = Background.AbsoluteSize
+		end
+	end)
+	
+	ResizeHandle.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			resizing = false
+		end
+	end)
+	
+	UserInputService.InputChanged:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and resizing then
+			local delta = input.Position - resizeStart
+			local newWidth = math.clamp(startSize.X + delta.X, Window.MinSize.X, Window.MaxSize.X)
+			local newHeight = math.clamp(startSize.Y + delta.Y, Window.MinSize.Y, Window.MaxSize.Y)
+			
+			Background.Size = UDim2.new(0, newWidth, 0, newHeight)
+			
+			ContentContainer.Size = UDim2.new(0, newWidth - 160, 0, newHeight - 72)
+			TabContainer.Size = UDim2.new(0, 120, 0, newHeight - 92)
+		end
+	end)
+	
 	local dragging = false
 	local dragStart, startPos
 	local dragTween
@@ -155,7 +201,7 @@ function SeizureUI:CreateWindow(config)
 	Background.InputEnded:Connect(handleDragEnd)
 	
 	UserInputService.InputChanged:Connect(function(input)
-		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging and not resizing then
 			local delta = input.Position - dragStart
 			local newPosition = UDim2.new(
 				startPos.X.Scale,
@@ -177,7 +223,6 @@ function SeizureUI:CreateWindow(config)
 	function Window:CreateTab(tabConfig)
 		local Tab = {}
 		Tab.Name = tabConfig.Name or "Tab"
-		Tab.Icon = tabConfig.Icon
 		Tab.Elements = {}
 		
 		local TabButton = Instance.new("TextButton")
@@ -186,36 +231,11 @@ function SeizureUI:CreateWindow(config)
 		TabButton.BackgroundTransparency = 1
 		TabButton.Size = UDim2.new(1, 0, 0, 21)
 		TabButton.Font = Enum.Font.Gotham
-		TabButton.Text = ""
+		TabButton.Text = Tab.Name
 		TabButton.TextColor3 = Color3.fromRGB(150, 150, 150)
 		TabButton.TextSize = 14
 		TabButton.TextXAlignment = Enum.TextXAlignment.Left
 		TabButton.TextTransparency = 1
-		
-		local tabIcon
-		if Tab.Icon then
-			tabIcon = Instance.new("ImageLabel")
-			tabIcon.Parent = TabButton
-			tabIcon.BackgroundTransparency = 1
-			tabIcon.Position = UDim2.new(0, 0, 0.5, 0)
-			tabIcon.AnchorPoint = Vector2.new(0, 0.5)
-			tabIcon.Size = UDim2.new(0, 16, 0, 16)
-			tabIcon.Image = Tab.Icon
-			tabIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
-			tabIcon.ImageTransparency = 1
-		end
-		
-		local tabLabel = Instance.new("TextLabel")
-		tabLabel.Parent = TabButton
-		tabLabel.BackgroundTransparency = 1
-		tabLabel.Position = UDim2.new(0, Tab.Icon and 22 or 0, 0, 0)
-		tabLabel.Size = UDim2.new(1, Tab.Icon and -22 or 0, 1, 0)
-		tabLabel.Font = Enum.Font.Gotham
-		tabLabel.Text = Tab.Name
-		tabLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-		tabLabel.TextSize = 14
-		tabLabel.TextXAlignment = Enum.TextXAlignment.Left
-		tabLabel.TextTransparency = 1
 		
 		task.wait(0.05)
 		TweenService:Create(TabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
