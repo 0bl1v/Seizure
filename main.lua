@@ -177,7 +177,7 @@ function SeizureUI:CreateWindow(config)
 	function Window:CreateTab(tabConfig)
 		local Tab = {}
 		Tab.Name = tabConfig.Name or "Tab"
-		Tab.Icon = tabConfig.Icon or "📄"
+		Tab.Icon = tabConfig.Icon
 		Tab.Elements = {}
 		
 		local TabButton = Instance.new("TextButton")
@@ -186,11 +186,36 @@ function SeizureUI:CreateWindow(config)
 		TabButton.BackgroundTransparency = 1
 		TabButton.Size = UDim2.new(1, 0, 0, 21)
 		TabButton.Font = Enum.Font.Gotham
-		TabButton.Text = Tab.Icon .. "  " .. Tab.Name
+		TabButton.Text = ""
 		TabButton.TextColor3 = Color3.fromRGB(150, 150, 150)
 		TabButton.TextSize = 14
 		TabButton.TextXAlignment = Enum.TextXAlignment.Left
 		TabButton.TextTransparency = 1
+		
+		local tabIcon
+		if Tab.Icon then
+			tabIcon = Instance.new("ImageLabel")
+			tabIcon.Parent = TabButton
+			tabIcon.BackgroundTransparency = 1
+			tabIcon.Position = UDim2.new(0, 0, 0.5, 0)
+			tabIcon.AnchorPoint = Vector2.new(0, 0.5)
+			tabIcon.Size = UDim2.new(0, 16, 0, 16)
+			tabIcon.Image = Tab.Icon
+			tabIcon.ImageColor3 = Color3.fromRGB(150, 150, 150)
+			tabIcon.ImageTransparency = 1
+		end
+		
+		local tabLabel = Instance.new("TextLabel")
+		tabLabel.Parent = TabButton
+		tabLabel.BackgroundTransparency = 1
+		tabLabel.Position = UDim2.new(0, Tab.Icon and 22 or 0, 0, 0)
+		tabLabel.Size = UDim2.new(1, Tab.Icon and -22 or 0, 1, 0)
+		tabLabel.Font = Enum.Font.Gotham
+		tabLabel.Text = Tab.Name
+		tabLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+		tabLabel.TextSize = 14
+		tabLabel.TextXAlignment = Enum.TextXAlignment.Left
+		tabLabel.TextTransparency = 1
 		
 		task.wait(0.05)
 		TweenService:Create(TabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
