@@ -24,21 +24,19 @@ function SeizureUI:CreateWindow(config)
 	Window.Author = Window.Config.Author or "inspired by windui"
 	Window.Tabs = {}
 	Window.CurrentTab = nil
-	Window.Destroyed = false
-	
-	local uniqueId = tostring(tick()):gsub("%.", "")
+	Window.MinSize = Vector2.new(500, 300)
+	Window.MaxSize = Vector2.new(900, 600)
 	
 	local ScreenGui = Instance.new("ScreenGui")
-	ScreenGui.Name = "SeizureUI_" .. uniqueId
+	ScreenGui.Name = "SeizureUI"
 	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	ScreenGui.ResetOnSpawn = false
-	ScreenGui.DisplayOrder = 999
 	
-	local success = pcall(function()
+	pcall(function()
 		ScreenGui.Parent = getParent()
 	end)
 	
-	if not success or not ScreenGui.Parent then
+	if not ScreenGui.Parent then
 		ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	end
 	
@@ -63,10 +61,8 @@ function SeizureUI:CreateWindow(config)
 	})
 	horizontalTween:Play()
 	
-	local verticalTween
 	horizontalTween.Completed:Connect(function()
-		if Window.Destroyed then return end
-		verticalTween = TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		local verticalTween = TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 			Size = UDim2.new(0, 652, 0, 392)
 		})
 		verticalTween:Play()
@@ -111,32 +107,24 @@ function SeizureUI:CreateWindow(config)
 	subtitle.TextXAlignment = Enum.TextXAlignment.Left
 	subtitle.TextTransparency = 1
 	
-	task.spawn(function()
-		task.wait(0.6)
-		if Window.Destroyed then return end
-		TweenService:Create(icon, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
-		TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-		TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-	end)
+	task.wait(0.6)
+	TweenService:Create(icon, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+	TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+	TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 	
-	local TabContainer = Instance.new("ScrollingFrame")
+	local TabContainer = Instance.new("Frame")
 	TabContainer.Name = "TabContainer"
 	TabContainer.Parent = Background
 	TabContainer.BackgroundTransparency = 1
-	TabContainer.BorderSizePixel = 0
 	TabContainer.Position = UDim2.new(0.019, 0, 0.145, 0)
 	TabContainer.Size = UDim2.new(0, 120, 0, 300)
-	TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-	TabContainer.ScrollBarThickness = 0
+	TabContainer.ClipsDescendants = false
+	TabContainer.ZIndex = 2
 	
 	local TabLayout = Instance.new("UIListLayout")
 	TabLayout.Parent = TabContainer
 	TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	TabLayout.Padding = UDim.new(0, 8)
-	
-	TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
-	end)
 	
 	local ContentContainer = Instance.new("Frame")
 	ContentContainer.Name = "ContentContainer"
@@ -145,76 +133,96 @@ function SeizureUI:CreateWindow(config)
 	ContentContainer.Position = UDim2.new(0.22, 0, 0.143, 0)
 	ContentContainer.Size = UDim2.new(0, 492, 0, 320)
 	
-	-- Fixed dragging system
+	local ResizeHandle = Instance.new("Frame")
+	ResizeHandle.Name = "ResizeHandle"
+	ResizeHandle.Parent = Background
+	ResizeHandle.AnchorPoint = Vector2.new(1, 1)
+	ResizeHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	ResizeHandle.BackgroundTransparency = 0.95
+	ResizeHandle.BorderSizePixel = 0
+	ResizeHandle.Position = UDim2.new(1, 0, 1, 0)
+	ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+	
+	local ResizeCorner = Instance.new("UICorner")
+	ResizeCorner.CornerRadius = UDim.new(0, 4)
+	ResizeCorner.Parent = ResizeHandle
+	
+	local resizing = false
+	local resizeStart, startSize
+	
+	ResizeHandle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			resizing = true
+			resizeStart = input.Position
+			startSize = Background.AbsoluteSize
+		end
+	end)
+	
+	ResizeHandle.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			resizing = false
+		end
+	end)
+	
+	UserInputService.InputChanged:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and resizing then
+			local delta = input.Position - resizeStart
+			local newWidth = math.clamp(startSize.X + delta.X, Window.MinSize.X, Window.MaxSize.X)
+			local newHeight = math.clamp(startSize.Y + delta.Y, Window.MinSize.Y, Window.MaxSize.Y)
+			
+			Background.Size = UDim2.new(0, newWidth, 0, newHeight)
+			
+			ContentContainer.Size = UDim2.new(0, newWidth - 160, 0, newHeight - 72)
+			TabContainer.Size = UDim2.new(0, 120, 0, newHeight - 92)
+		end
+	end)
+	
 	local dragging = false
-	local dragInput
-	local dragStart
-	local startPos
+	local dragStart, startPos
+	local dragTween
 	
-	local function update(input)
-		if Window.Destroyed then return end
-		local delta = input.Position - dragStart
-		Background.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
-	
-	Background.InputBegan:Connect(function(input)
-		if Window.Destroyed then return end
+	local function handleDragStart(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			dragStart = input.Position
 			startPos = Background.Position
 			
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
+			if dragTween then
+				dragTween:Cancel()
+			end
 		end
-	end)
-	
-	Background.InputChanged:Connect(function(input)
-		if Window.Destroyed then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInput = input
-		end
-	end)
-	
-	UserInputService.InputChanged:Connect(function(input)
-		if Window.Destroyed then return end
-		if input == dragInput and dragging then
-			update(input)
-		end
-	end)
-	
-	function Window:Destroy()
-		if self.Destroyed then return end
-		self.Destroyed = true
-		
-		if horizontalTween then
-			horizontalTween:Cancel()
-		end
-		if verticalTween then
-			verticalTween:Cancel()
-		end
-		
-		local closeTween = TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-			Size = UDim2.new(0, 0, 0, 0),
-			BackgroundTransparency = 1
-		})
-		closeTween:Play()
-		closeTween.Completed:Connect(function()
-			ScreenGui:Destroy()
-		end)
 	end
 	
+	local function handleDragEnd(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end
+	
+	Background.InputBegan:Connect(handleDragStart)
+	Background.InputEnded:Connect(handleDragEnd)
+	
+	UserInputService.InputChanged:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging and not resizing then
+			local delta = input.Position - dragStart
+			local newPosition = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+			
+			if dragTween then
+				dragTween:Cancel()
+			end
+			dragTween = TweenService:Create(Background, TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+				Position = newPosition
+			})
+			dragTween:Play()
+		end
+	end)
+	
 	function Window:CreateTab(tabConfig)
-		if Window.Destroyed then return end
-		
 		local Tab = {}
 		Tab.Name = tabConfig.Name or "Tab"
 		Tab.Elements = {}
@@ -230,13 +238,9 @@ function SeizureUI:CreateWindow(config)
 		TabButton.TextSize = 14
 		TabButton.TextXAlignment = Enum.TextXAlignment.Left
 		TabButton.TextTransparency = 1
-		TabButton.AutoButtonColor = false
 		
-		task.spawn(function()
-			task.wait(0.05)
-			if Window.Destroyed then return end
-			TweenService:Create(TabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-		end)
+		task.wait(0.05)
+		TweenService:Create(TabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 		
 		local TabContent = Instance.new("ScrollingFrame")
 		TabContent.Name = "Content_" .. Tab.Name
@@ -259,8 +263,6 @@ function SeizureUI:CreateWindow(config)
 		end)
 		
 		TabButton.MouseButton1Click:Connect(function()
-			if Window.Destroyed then return end
-			
 			for _, tab in pairs(Window.Tabs) do
 				TweenService:Create(tab.Button, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
 				tab.Content.Visible = false
@@ -273,14 +275,12 @@ function SeizureUI:CreateWindow(config)
 		end)
 		
 		TabButton.MouseEnter:Connect(function()
-			if Window.Destroyed then return end
 			if TabButton.TextColor3 ~= Color3.fromRGB(255, 255, 255) then
 				TweenService:Create(TabButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
 			end
 		end)
 		
 		TabButton.MouseLeave:Connect(function()
-			if Window.Destroyed then return end
 			if TabButton.TextColor3 ~= Color3.fromRGB(255, 255, 255) then
 				TweenService:Create(TabButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
 			end
@@ -298,8 +298,6 @@ function SeizureUI:CreateWindow(config)
 		table.insert(Window.Tabs, Tab)
 		
 		function Tab:CreateButton(buttonConfig)
-			if Window.Destroyed then return end
-			
 			local buttonFrame = Instance.new("Frame")
 			buttonFrame.Name = "Button"
 			buttonFrame.Parent = TabContent
@@ -327,47 +325,31 @@ function SeizureUI:CreateWindow(config)
 			buttonLabel.TextYAlignment = Enum.TextYAlignment.Center
 			buttonLabel.TextTransparency = 1
 			
-			task.spawn(function()
-				task.wait(0.1)
-				if Window.Destroyed then return end
-				TweenService:Create(buttonLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-			end)
+			task.wait(0.1)
+			TweenService:Create(buttonLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 			
 			local clickButton = Instance.new("TextButton")
 			clickButton.Parent = buttonFrame
 			clickButton.BackgroundTransparency = 1
 			clickButton.Size = UDim2.new(1, 0, 1, 0)
 			clickButton.Text = ""
-			clickButton.AutoButtonColor = false
 			
 			clickButton.MouseButton1Click:Connect(function()
-				if Window.Destroyed then return end
-				
 				local originalSize = buttonFrame.Size
 				TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					Size = UDim2.new(1, -4, 0, 38)
 				}):Play()
-				
-				task.spawn(function()
-					task.wait(0.1)
-					if Window.Destroyed then return end
-					TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-						Size = originalSize
-					}):Play()
-				end)
+				task.wait(0.1)
+				TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					Size = originalSize
+				}):Play()
 				
 				if buttonConfig.Callback then
-					task.spawn(function()
-						local success, err = pcall(buttonConfig.Callback)
-						if not success then
-							warn("[SeizureUI] Button callback error:", err)
-						end
-					end)
+					buttonConfig.Callback()
 				end
 			end)
 			
 			clickButton.MouseEnter:Connect(function()
-				if Window.Destroyed then return end
 				TweenService:Create(buttonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(30, 30, 30),
 					Size = UDim2.new(1, 0, 0, 44)
@@ -375,7 +357,6 @@ function SeizureUI:CreateWindow(config)
 			end)
 			
 			clickButton.MouseLeave:Connect(function()
-				if Window.Destroyed then return end
 				TweenService:Create(buttonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(20, 20, 20),
 					Size = UDim2.new(1, 0, 0, 42)
@@ -386,8 +367,6 @@ function SeizureUI:CreateWindow(config)
 		end
 		
 		function Tab:CreateToggle(toggleConfig)
-			if Window.Destroyed then return end
-			
 			local toggleFrame = Instance.new("Frame")
 			toggleFrame.Name = "Toggle"
 			toggleFrame.Parent = TabContent
@@ -415,11 +394,8 @@ function SeizureUI:CreateWindow(config)
 			toggleLabel.TextYAlignment = Enum.TextYAlignment.Center
 			toggleLabel.TextTransparency = 1
 			
-			task.spawn(function()
-				task.wait(0.1)
-				if Window.Destroyed then return end
-				TweenService:Create(toggleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-			end)
+			task.wait(0.1)
+			TweenService:Create(toggleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 			
 			local toggleState = toggleConfig.Default or false
 			
@@ -451,11 +427,8 @@ function SeizureUI:CreateWindow(config)
 			clickButton.BackgroundTransparency = 1
 			clickButton.Size = UDim2.new(1, 0, 1, 0)
 			clickButton.Text = ""
-			clickButton.AutoButtonColor = false
 			
 			clickButton.MouseButton1Click:Connect(function()
-				if Window.Destroyed then return end
-				
 				toggleState = not toggleState
 				
 				TweenService:Create(checkBox, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -467,24 +440,17 @@ function SeizureUI:CreateWindow(config)
 				}):Play()
 				
 				if toggleConfig.Callback then
-					task.spawn(function()
-						local success, err = pcall(toggleConfig.Callback, toggleState)
-						if not success then
-							warn("[SeizureUI] Toggle callback error:", err)
-						end
-					end)
+					toggleConfig.Callback(toggleState)
 				end
 			end)
 			
 			clickButton.MouseEnter:Connect(function()
-				if Window.Destroyed then return end
 				TweenService:Create(toggleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 				}):Play()
 			end)
 			
 			clickButton.MouseLeave:Connect(function()
-				if Window.Destroyed then return end
 				TweenService:Create(toggleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 				}):Play()
