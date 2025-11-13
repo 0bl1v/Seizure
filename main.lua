@@ -118,6 +118,8 @@ function SeizureUI:CreateWindow(config)
 	TabContainer.BackgroundTransparency = 1
 	TabContainer.Position = UDim2.new(0.019, 0, 0.145, 0)
 	TabContainer.Size = UDim2.new(0, 120, 0, 300)
+	TabContainer.ClipsDescendants = false
+	TabContainer.ZIndex = 2
 	
 	local TabLayout = Instance.new("UIListLayout")
 	TabLayout.Parent = TabContainer
@@ -130,6 +132,8 @@ function SeizureUI:CreateWindow(config)
 	ContentContainer.BackgroundTransparency = 1
 	ContentContainer.Position = UDim2.new(0.22, 0, 0.143, 0)
 	ContentContainer.Size = UDim2.new(0, 492, 0, 320)
+	ContentContainer.ClipsDescendants = false
+	ContentContainer.ZIndex = 1
 	
 	local ResizeHandle = Instance.new("Frame")
 	ResizeHandle.Name = "ResizeHandle"
@@ -236,6 +240,7 @@ function SeizureUI:CreateWindow(config)
 		TabButton.TextSize = 14
 		TabButton.TextXAlignment = Enum.TextXAlignment.Left
 		TabButton.TextTransparency = 1
+		TabButton.ZIndex = 3
 		
 		task.wait(0.05)
 		TweenService:Create(TabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
