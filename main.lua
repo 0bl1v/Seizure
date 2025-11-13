@@ -1,3 +1,6 @@
+local SeizureUI = {}
+SeizureUI.__index = SeizureUI
+
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
@@ -14,16 +17,14 @@ local function getParent()
 	end
 end
 
-local SeizureUI = {}
-
-function SeizureUI.new(options)
-	local self = setmetatable({}, {__index = SeizureUI})
-	
-	self.Title = options.Title or "SeizureUI"
-	self.Subtitle = options.Subtitle or "inspired by windui"
-	self.Tabs = {}
-	self.CurrentTab = nil
-	self.Destroyed = false
+function SeizureUI:CreateWindow(config)
+	local Window = {}
+	Window.Config = config or {}
+	Window.Title = Window.Config.Title or "SeizureUI"
+	Window.Author = Window.Config.Author or "inspired by windui"
+	Window.Tabs = {}
+	Window.CurrentTab = nil
+	Window.Destroyed = false
 	
 	local uniqueId = tostring(tick()):gsub("%.", "")
 	
@@ -64,7 +65,7 @@ function SeizureUI.new(options)
 	
 	local verticalTween
 	horizontalTween.Completed:Connect(function()
-		if self.Destroyed then return end
+		if Window.Destroyed then return end
 		verticalTween = TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 			Size = UDim2.new(0, 652, 0, 392)
 		})
@@ -91,7 +92,7 @@ function SeizureUI.new(options)
 	title.Position = UDim2.new(0.094, 0, 0.028, 0)
 	title.Size = UDim2.new(0, 548, 0, 21)
 	title.Font = Enum.Font.GothamBold
-	title.Text = self.Title
+	title.Text = Window.Title
 	title.TextColor3 = Color3.fromRGB(255, 255, 255)
 	title.TextSize = 14
 	title.TextXAlignment = Enum.TextXAlignment.Left
@@ -104,7 +105,7 @@ function SeizureUI.new(options)
 	subtitle.Position = UDim2.new(0.094, 0, 0.064, 0)
 	subtitle.Size = UDim2.new(0, 548, 0, 21)
 	subtitle.Font = Enum.Font.Gotham
-	subtitle.Text = self.Subtitle
+	subtitle.Text = Window.Author
 	subtitle.TextColor3 = Color3.fromRGB(150, 150, 150)
 	subtitle.TextSize = 12
 	subtitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -112,7 +113,7 @@ function SeizureUI.new(options)
 	
 	task.spawn(function()
 		task.wait(0.6)
-		if self.Destroyed then return end
+		if Window.Destroyed then return end
 		TweenService:Create(icon, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 		TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 		TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
@@ -144,49 +145,55 @@ function SeizureUI.new(options)
 	ContentContainer.Position = UDim2.new(0.22, 0, 0.143, 0)
 	ContentContainer.Size = UDim2.new(0, 492, 0, 320)
 	
+	-- Fixed dragging system
 	local dragging = false
-	local dragStart, startPos
-	local dragConnection
+	local dragInput
+	local dragStart
+	local startPos
 	
-	local function handleDragStart(input)
-		if self.Destroyed then return end
+	local function update(input)
+		if Window.Destroyed then return end
+		local delta = input.Position - dragStart
+		Background.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+	
+	Background.InputBegan:Connect(function(input)
+		if Window.Destroyed then return end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			dragStart = input.Position
 			startPos = Background.Position
-		end
-	end
-	
-	local function handleDragEnd(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end
-	
-	Background.InputBegan:Connect(handleDragStart)
-	Background.InputEnded:Connect(handleDragEnd)
-	
-	dragConnection = UserInputService.InputChanged:Connect(function(input)
-		if not dragging or self.Destroyed then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			local currentPos = input.Position
-			local delta = currentPos - dragStart
-			Background.Position = UDim2.new(
-				startPos.X.Scale,
-				startPos.X.Offset + delta.X,
-				startPos.Y.Scale,
-				startPos.Y.Offset + delta.Y
-			)
+			
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
 		end
 	end)
 	
-	function self:Destroy()
+	Background.InputChanged:Connect(function(input)
+		if Window.Destroyed then return end
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+	
+	UserInputService.InputChanged:Connect(function(input)
+		if Window.Destroyed then return end
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+	
+	function Window:Destroy()
 		if self.Destroyed then return end
 		self.Destroyed = true
-		
-		if dragConnection then
-			dragConnection:Disconnect()
-		end
 		
 		if horizontalTween then
 			horizontalTween:Cancel()
@@ -205,11 +212,11 @@ function SeizureUI.new(options)
 		end)
 	end
 	
-	function self:AddTab(name)
-		if self.Destroyed then return end
+	function Window:CreateTab(tabConfig)
+		if Window.Destroyed then return end
 		
 		local Tab = {}
-		Tab.Name = name
+		Tab.Name = tabConfig.Name or "Tab"
 		Tab.Elements = {}
 		
 		local TabButton = Instance.new("TextButton")
@@ -227,7 +234,7 @@ function SeizureUI.new(options)
 		
 		task.spawn(function()
 			task.wait(0.05)
-			if self.Destroyed then return end
+			if Window.Destroyed then return end
 			TweenService:Create(TabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 		end)
 		
@@ -252,9 +259,9 @@ function SeizureUI.new(options)
 		end)
 		
 		TabButton.MouseButton1Click:Connect(function()
-			if self.Destroyed then return end
+			if Window.Destroyed then return end
 			
-			for _, tab in pairs(self.Tabs) do
+			for _, tab in pairs(Window.Tabs) do
 				TweenService:Create(tab.Button, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
 				tab.Content.Visible = false
 			end
@@ -262,18 +269,18 @@ function SeizureUI.new(options)
 			TweenService:Create(TabButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 			TabContent.Visible = true
 			
-			self.CurrentTab = Tab
+			Window.CurrentTab = Tab
 		end)
 		
 		TabButton.MouseEnter:Connect(function()
-			if self.Destroyed then return end
+			if Window.Destroyed then return end
 			if TabButton.TextColor3 ~= Color3.fromRGB(255, 255, 255) then
 				TweenService:Create(TabButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
 			end
 		end)
 		
 		TabButton.MouseLeave:Connect(function()
-			if self.Destroyed then return end
+			if Window.Destroyed then return end
 			if TabButton.TextColor3 ~= Color3.fromRGB(255, 255, 255) then
 				TweenService:Create(TabButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
 			end
@@ -282,16 +289,16 @@ function SeizureUI.new(options)
 		Tab.Button = TabButton
 		Tab.Content = TabContent
 		
-		if #self.Tabs == 0 then
+		if #Window.Tabs == 0 then
 			TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 			TabContent.Visible = true
-			self.CurrentTab = Tab
+			Window.CurrentTab = Tab
 		end
 		
-		table.insert(self.Tabs, Tab)
+		table.insert(Window.Tabs, Tab)
 		
-		function Tab:AddButton(name, callback)
-			if self.Destroyed then return end
+		function Tab:CreateButton(buttonConfig)
+			if Window.Destroyed then return end
 			
 			local buttonFrame = Instance.new("Frame")
 			buttonFrame.Name = "Button"
@@ -313,7 +320,7 @@ function SeizureUI.new(options)
 			buttonLabel.Position = UDim2.new(0.026, 0, 0, 0)
 			buttonLabel.Size = UDim2.new(0.95, 0, 1, 0)
 			buttonLabel.Font = Enum.Font.Gotham
-			buttonLabel.Text = name
+			buttonLabel.Text = buttonConfig.Name or "Button"
 			buttonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			buttonLabel.TextSize = 14
 			buttonLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -322,7 +329,7 @@ function SeizureUI.new(options)
 			
 			task.spawn(function()
 				task.wait(0.1)
-				if self.Destroyed then return end
+				if Window.Destroyed then return end
 				TweenService:Create(buttonLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 			end)
 			
@@ -334,7 +341,7 @@ function SeizureUI.new(options)
 			clickButton.AutoButtonColor = false
 			
 			clickButton.MouseButton1Click:Connect(function()
-				if self.Destroyed then return end
+				if Window.Destroyed then return end
 				
 				local originalSize = buttonFrame.Size
 				TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -343,15 +350,15 @@ function SeizureUI.new(options)
 				
 				task.spawn(function()
 					task.wait(0.1)
-					if self.Destroyed then return end
+					if Window.Destroyed then return end
 					TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 						Size = originalSize
 					}):Play()
 				end)
 				
-				if callback then
+				if buttonConfig.Callback then
 					task.spawn(function()
-						local success, err = pcall(callback)
+						local success, err = pcall(buttonConfig.Callback)
 						if not success then
 							warn("[SeizureUI] Button callback error:", err)
 						end
@@ -360,7 +367,7 @@ function SeizureUI.new(options)
 			end)
 			
 			clickButton.MouseEnter:Connect(function()
-				if self.Destroyed then return end
+				if Window.Destroyed then return end
 				TweenService:Create(buttonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(30, 30, 30),
 					Size = UDim2.new(1, 0, 0, 44)
@@ -368,7 +375,7 @@ function SeizureUI.new(options)
 			end)
 			
 			clickButton.MouseLeave:Connect(function()
-				if self.Destroyed then return end
+				if Window.Destroyed then return end
 				TweenService:Create(buttonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(20, 20, 20),
 					Size = UDim2.new(1, 0, 0, 42)
@@ -378,8 +385,8 @@ function SeizureUI.new(options)
 			return buttonFrame
 		end
 		
-		function Tab:AddToggle(name, default, callback)
-			if self.Destroyed then return end
+		function Tab:CreateToggle(toggleConfig)
+			if Window.Destroyed then return end
 			
 			local toggleFrame = Instance.new("Frame")
 			toggleFrame.Name = "Toggle"
@@ -401,7 +408,7 @@ function SeizureUI.new(options)
 			toggleLabel.Position = UDim2.new(0.026, 0, 0, 0)
 			toggleLabel.Size = UDim2.new(0.85, 0, 1, 0)
 			toggleLabel.Font = Enum.Font.Gotham
-			toggleLabel.Text = name
+			toggleLabel.Text = toggleConfig.Name or "Toggle"
 			toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			toggleLabel.TextSize = 14
 			toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -410,11 +417,11 @@ function SeizureUI.new(options)
 			
 			task.spawn(function()
 				task.wait(0.1)
-				if self.Destroyed then return end
+				if Window.Destroyed then return end
 				TweenService:Create(toggleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 			end)
 			
-			local toggleState = default or false
+			local toggleState = toggleConfig.Default or false
 			
 			local checkBox = Instance.new("Frame")
 			checkBox.Parent = toggleFrame
@@ -447,7 +454,7 @@ function SeizureUI.new(options)
 			clickButton.AutoButtonColor = false
 			
 			clickButton.MouseButton1Click:Connect(function()
-				if self.Destroyed then return end
+				if Window.Destroyed then return end
 				
 				toggleState = not toggleState
 				
@@ -459,9 +466,9 @@ function SeizureUI.new(options)
 					TextTransparency = toggleState and 0 or 1
 				}):Play()
 				
-				if callback then
+				if toggleConfig.Callback then
 					task.spawn(function()
-						local success, err = pcall(callback, toggleState)
+						local success, err = pcall(toggleConfig.Callback, toggleState)
 						if not success then
 							warn("[SeizureUI] Toggle callback error:", err)
 						end
@@ -470,14 +477,14 @@ function SeizureUI.new(options)
 			end)
 			
 			clickButton.MouseEnter:Connect(function()
-				if self.Destroyed then return end
+				if Window.Destroyed then return end
 				TweenService:Create(toggleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 				}):Play()
 			end)
 			
 			clickButton.MouseLeave:Connect(function()
-				if self.Destroyed then return end
+				if Window.Destroyed then return end
 				TweenService:Create(toggleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 				}):Play()
@@ -489,7 +496,7 @@ function SeizureUI.new(options)
 		return Tab
 	end
 	
-	return self
+	return Window
 end
 
 return SeizureUI
