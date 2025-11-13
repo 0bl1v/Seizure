@@ -1,9 +1,4 @@
-local UICorner = Instance.new("UICorner")
-	UICorner.CornerRadius = UDim.new(0.02, 0)
-	UICorner.Parent = Background
-	
-	local horizontalTween = TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Size = UDim2.new(local SeizureUI = {}
+local SeizureUI = {}
 SeizureUI.__index = SeizureUI
 
 local TweenService = game:GetService("TweenService")
@@ -58,11 +53,18 @@ function SeizureUI:CreateWindow(config)
 	UICorner.CornerRadius = UDim.new(0.02, 0)
 	UICorner.Parent = Background
 	
-	local introTween = TweenService:Create(Background, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		Size = UDim2.new(0, 652, 0, 392),
+	local horizontalTween = TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 652, 0, 0),
 		BackgroundTransparency = 0
 	})
-	introTween:Play()
+	horizontalTween:Play()
+	
+	horizontalTween.Completed:Connect(function()
+		local verticalTween = TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size = UDim2.new(0, 652, 0, 392)
+		})
+		verticalTween:Play()
+	end)
 	
 	local icon = Instance.new("ImageLabel")
 	icon.Name = "icon"
@@ -103,7 +105,7 @@ function SeizureUI:CreateWindow(config)
 	subtitle.TextXAlignment = Enum.TextXAlignment.Left
 	subtitle.TextTransparency = 1
 	
-	task.wait(0.3)
+	task.wait(0.6)
 	TweenService:Create(icon, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 	TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 	TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
@@ -272,6 +274,7 @@ function SeizureUI:CreateWindow(config)
 			buttonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			buttonLabel.TextSize = 14
 			buttonLabel.TextXAlignment = Enum.TextXAlignment.Left
+			buttonLabel.TextYAlignment = Enum.TextYAlignment.Center
 			buttonLabel.TextTransparency = 1
 			
 			task.wait(0.1)
