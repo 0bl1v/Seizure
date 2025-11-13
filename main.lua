@@ -1,4 +1,9 @@
-local SeizureUI = {}
+local UICorner = Instance.new("UICorner")
+	UICorner.CornerRadius = UDim.new(0.02, 0)
+	UICorner.Parent = Background
+	
+	local horizontalTween = TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = UDim2.new(local SeizureUI = {}
 SeizureUI.__index = SeizureUI
 
 local TweenService = game:GetService("TweenService")
