@@ -177,6 +177,7 @@ function SeizureUI:CreateWindow(config)
 	function Window:CreateTab(tabConfig)
 		local Tab = {}
 		Tab.Name = tabConfig.Name or "Tab"
+		Tab.Icon = tabConfig.Icon or "📄"
 		Tab.Elements = {}
 		
 		local TabButton = Instance.new("TextButton")
@@ -185,7 +186,7 @@ function SeizureUI:CreateWindow(config)
 		TabButton.BackgroundTransparency = 1
 		TabButton.Size = UDim2.new(1, 0, 0, 21)
 		TabButton.Font = Enum.Font.Gotham
-		TabButton.Text = Tab.Name
+		TabButton.Text = Tab.Icon .. "  " .. Tab.Name
 		TabButton.TextColor3 = Color3.fromRGB(150, 150, 150)
 		TabButton.TextSize = 14
 		TabButton.TextXAlignment = Enum.TextXAlignment.Left
