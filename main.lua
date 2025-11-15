@@ -113,38 +113,6 @@ function SeizureUI:CreateWindow(config)
 	TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 	TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-	-- Close Button
-	local closeButton = Instance.new("ImageButton")
-	closeButton.Name = "CloseButton"
-	closeButton.Parent = Background
-	closeButton.AnchorPoint = Vector2.new(1, 0)
-	closeButton.BackgroundTransparency = 1
-	closeButton.Position = UDim2.new(0.98, 0, 0.028, 0)
-	closeButton.Size = UDim2.new(0, 20, 0, 20)
-	closeButton.Image = "rbxassetid://10747384394"
-	closeButton.ImageColor3 = Color3.fromRGB(200, 200, 200)
-	closeButton.ImageTransparency = 1
-
-	TweenService:Create(closeButton, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
-
-	closeButton.MouseButton1Click:Connect(function()
-		-- Fade out all elements
-		TweenService:Create(icon, TweenInfo.new(0.15), {ImageTransparency = 1}):Play()
-		TweenService:Create(title, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
-		TweenService:Create(subtitle, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
-		TweenService:Create(closeButton, TweenInfo.new(0.15), {ImageTransparency = 1}):Play()
-		
-		-- Squeeze from sides
-		task.wait(0.1)
-		TweenService:Create(Background, TweenInfo.new(0.25, Enum.EasingStyle.Linear), {
-			Size = UDim2.new(0, 0, 0, Background.Size.Y.Offset),
-			BackgroundTransparency = 1
-		}):Play()
-		
-		task.wait(0.25)
-		ScreenGui:Destroy()
-	end)
-
 	-- Calculate dynamic sizes based on window size
 	local windowWidth = Window.Size.X.Offset
 	local windowHeight = Window.Size.Y.Offset
