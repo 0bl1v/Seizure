@@ -21,7 +21,17 @@ function SeizureUI:CreateWindow(config)
 	local Window = {}
 	Window.Config = config or {}
 	Window.Title = Window.Config.Title or "SeizureUI"
-	Window.Author = Window.Config.Author or "inspired by windui"
+	Window.Description = Window.Config.Description or "inspired by windui"
+	Window.Icon = Window.Config.Icon or "rbxassetid://156513166"
+
+	-- Minimum size check
+	local requestedSize = Window.Config.Size or UDim2.new(0, 652, 0, 392)
+	local minWidth = 400
+	local minHeight = 250
+	local width = math.max(requestedSize.X.Offset, minWidth)
+	local height = math.max(requestedSize.Y.Offset, minHeight)
+	Window.Size = UDim2.new(0, width, 0, height)
+
 	Window.Tabs = {}
 	Window.CurrentTab = nil
 
@@ -54,7 +64,7 @@ function SeizureUI:CreateWindow(config)
 	UICorner.Parent = Background
 
 	local introTween = TweenService:Create(Background, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		Size = UDim2.new(0, 652, 0, 392),
+		Size = Window.Size,
 		BackgroundTransparency = 0
 	})
 	introTween:Play()
@@ -65,7 +75,7 @@ function SeizureUI:CreateWindow(config)
 	icon.BackgroundTransparency = 1
 	icon.Position = UDim2.new(0.02, 0, 0.028, 0)
 	icon.Size = UDim2.new(0, 35, 0, 35)
-	icon.Image = "rbxassetid://156513166"
+	icon.Image = Window.Icon
 	icon.ImageTransparency = 1
 
 	local iconCorner = Instance.new("UICorner")
@@ -92,7 +102,7 @@ function SeizureUI:CreateWindow(config)
 	subtitle.Position = UDim2.new(0.094, 0, 0.064, 0)
 	subtitle.Size = UDim2.new(0, 548, 0, 21)
 	subtitle.Font = Enum.Font.Gotham
-	subtitle.Text = Window.Author
+	subtitle.Text = Window.Description
 	subtitle.TextColor3 = Color3.fromRGB(150, 150, 150)
 	subtitle.TextSize = 12
 	subtitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -103,12 +113,19 @@ function SeizureUI:CreateWindow(config)
 	TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 	TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
+	-- Calculate dynamic sizes based on window size
+	local windowWidth = Window.Size.X.Offset
+	local windowHeight = Window.Size.Y.Offset
+	local tabContainerHeight = windowHeight * 0.765 -- 76.5% of window height
+	local contentContainerWidth = windowWidth * 0.754 -- 75.4% of window width
+	local contentContainerHeight = windowHeight * 0.816 -- 81.6% of window height
+
 	local TabContainer = Instance.new("Frame")
 	TabContainer.Name = "TabContainer"
 	TabContainer.Parent = Background
 	TabContainer.BackgroundTransparency = 1
 	TabContainer.Position = UDim2.new(0.019, 0, 0.145, 0)
-	TabContainer.Size = UDim2.new(0, 120, 0, 300)
+	TabContainer.Size = UDim2.new(0, 120, 0, tabContainerHeight)
 
 	local TabLayout = Instance.new("UIListLayout")
 	TabLayout.Parent = TabContainer
@@ -120,7 +137,7 @@ function SeizureUI:CreateWindow(config)
 	ContentContainer.Parent = Background
 	ContentContainer.BackgroundTransparency = 1
 	ContentContainer.Position = UDim2.new(0.22, 0, 0.143, 0)
-	ContentContainer.Size = UDim2.new(0, 492, 0, 320)
+	ContentContainer.Size = UDim2.new(0, contentContainerWidth, 0, contentContainerHeight)
 
 	local dragging = false
 	local dragStart, startPos
@@ -352,16 +369,15 @@ function SeizureUI:CreateWindow(config)
 			checkCorner.CornerRadius = UDim.new(0.2, 0)
 			checkCorner.Parent = checkBox
 
-			local checkMark = Instance.new("TextLabel")
+			local checkMark = Instance.new("ImageLabel")
 			checkMark.Parent = checkBox
 			checkMark.BackgroundTransparency = 1
-			checkMark.Position = UDim2.new(0, 0, 0, -1)
-			checkMark.Size = UDim2.new(1, 0, 1, 0)
-			checkMark.Font = Enum.Font.GothamBold
-			checkMark.Text = ""
-			checkMark.TextColor3 = Color3.fromRGB(0, 0, 0)
-			checkMark.TextSize = 16
-			checkMark.TextTransparency = toggleState and 0 or 1
+			checkMark.AnchorPoint = Vector2.new(0.5, 0.5)
+			checkMark.Position = UDim2.new(0.5, 0, 0.5, 0)
+			checkMark.Size = UDim2.new(0.7, 0, 0.7, 0)
+			checkMark.Image = "rbxassetid://10709790644"
+			checkMark.ImageColor3 = Color3.fromRGB(0, 0, 0)
+			checkMark.ImageTransparency = toggleState and 0 or 1
 
 			local clickButton = Instance.new("TextButton")
 			clickButton.Parent = toggleFrame
@@ -377,7 +393,7 @@ function SeizureUI:CreateWindow(config)
 				}):Play()
 
 				TweenService:Create(checkMark, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-					TextTransparency = toggleState and 0 or 1
+					ImageTransparency = toggleState and 0 or 1
 				}):Play()
 
 				if toggleConfig.Callback then
