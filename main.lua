@@ -23,7 +23,7 @@ function SeizureUI:CreateWindow(config)
 	Window.Title = Window.Config.Title or "SeizureUI"
 	Window.Description = Window.Config.Description or "inspired by windui"
 	Window.Icon = Window.Config.Icon or "rbxassetid://156513166"
-
+	
 	-- Minimum size check
 	local requestedSize = Window.Config.Size or UDim2.new(0, 652, 0, 392)
 	local minWidth = 400
@@ -31,7 +31,7 @@ function SeizureUI:CreateWindow(config)
 	local width = math.max(requestedSize.X.Offset, minWidth)
 	local height = math.max(requestedSize.Y.Offset, minHeight)
 	Window.Size = UDim2.new(0, width, 0, height)
-
+	
 	Window.Tabs = {}
 	Window.CurrentTab = nil
 
@@ -128,17 +128,20 @@ function SeizureUI:CreateWindow(config)
 	TweenService:Create(closeButton, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 
 	closeButton.MouseButton1Click:Connect(function()
-		TweenService:Create(Background, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-			Size = UDim2.new(0, 0, 0, 0),
+		-- Fade out all elements
+		TweenService:Create(icon, TweenInfo.new(0.15), {ImageTransparency = 1}):Play()
+		TweenService:Create(title, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
+		TweenService:Create(subtitle, TweenInfo.new(0.15), {TextTransparency = 1}):Play()
+		TweenService:Create(closeButton, TweenInfo.new(0.15), {ImageTransparency = 1}):Play()
+		
+		-- Squeeze from sides
+		task.wait(0.1)
+		TweenService:Create(Background, TweenInfo.new(0.25, Enum.EasingStyle.Linear), {
+			Size = UDim2.new(0, 0, 0, Background.Size.Y.Offset),
 			BackgroundTransparency = 1
 		}):Play()
-
-		TweenService:Create(icon, TweenInfo.new(0.3), {ImageTransparency = 1}):Play()
-		TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-		TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-		TweenService:Create(closeButton, TweenInfo.new(0.3), {ImageTransparency = 1}):Play()
-
-		task.wait(0.3)
+		
+		task.wait(0.25)
 		ScreenGui:Destroy()
 	end)
 
