@@ -274,7 +274,7 @@ function SeizureUI:CreateWindow(config)
 			buttonLabel.BackgroundTransparency = 1
 			buttonLabel.Position = UDim2.new(0.026, 0, 0, 0)
 			buttonLabel.Size = UDim2.new(0.95, 0, 1, 0)
-			buttonLabel.Font = Enum.Font.Gotham
+			buttonLabel.Font = Enum.Font.GothamMedium
 			buttonLabel.Text = buttonConfig.Name or "Button"
 			buttonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			buttonLabel.TextSize = 14
@@ -342,7 +342,7 @@ function SeizureUI:CreateWindow(config)
 			toggleLabel.BackgroundTransparency = 1
 			toggleLabel.Position = UDim2.new(0.026, 0, 0, 0)
 			toggleLabel.Size = UDim2.new(0.85, 0, 1, 0)
-			toggleLabel.Font = Enum.Font.Gotham
+			toggleLabel.Font = Enum.Font.GothamMedium
 			toggleLabel.Text = toggleConfig.Name or "Toggle"
 			toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			toggleLabel.TextSize = 14
