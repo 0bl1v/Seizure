@@ -23,7 +23,7 @@ function SeizureUI:CreateWindow(config)
 	Window.Title = Window.Config.Title or "SeizureUI"
 	Window.Description = Window.Config.Description or "inspired by windui"
 	Window.Icon = Window.Config.Icon or "rbxassetid://156513166"
-	
+
 	-- Minimum size check
 	local requestedSize = Window.Config.Size or UDim2.new(0, 652, 0, 392)
 	local minWidth = 400
@@ -31,7 +31,7 @@ function SeizureUI:CreateWindow(config)
 	local width = math.max(requestedSize.X.Offset, minWidth)
 	local height = math.max(requestedSize.Y.Offset, minHeight)
 	Window.Size = UDim2.new(0, width, 0, height)
-	
+
 	Window.Tabs = {}
 	Window.CurrentTab = nil
 
