@@ -1,3 +1,5 @@
+# seizureui module doc
+
 ## window
 
 ``` lua
@@ -5,14 +7,14 @@ local window = seizureui:createwindow({
     title = "my super hub",
     description = "inspired by windui",
     icon = "rbxassetid://12345678",
-    size = udim2.new(0, 652, 0, 400)
+    size = udim2.new(0, 652, 0, 392)
 })
 ```
 
 ## tab
 
 ``` lua
-local tab1 = window:createtab({
+local tab = window:createtab({
     name = "home"
 })
 ```
@@ -20,10 +22,10 @@ local tab1 = window:createtab({
 ## button
 
 ``` lua
-tab1:createbutton({
+tab:createbutton({
     name = "click me",
     callback = function()
-        print("button clicked")
+        print("clicked")
     end
 })
 ```
@@ -31,7 +33,7 @@ tab1:createbutton({
 ## toggle
 
 ``` lua
-tab1:createtoggle({
+tab:createtoggle({
     name = "esp",
     default = false,
     callback = function(v)
