@@ -24,7 +24,6 @@ function SeizureUI:CreateWindow(config)
 	Window.Description = Window.Config.Description or "inspired by windui"
 	Window.Icon = Window.Config.Icon or "rbxassetid://156513166"
 
-	-- Minimum size check
 	local requestedSize = Window.Config.Size or UDim2.new(0, 652, 0, 392)
 	local minWidth = 400
 	local minHeight = 250
@@ -88,7 +87,7 @@ function SeizureUI:CreateWindow(config)
 	title.BackgroundTransparency = 1
 	title.Position = UDim2.new(0.094, 0, 0.028, 0)
 	title.Size = UDim2.new(0, 548, 0, 21)
-	title.Font = Enum.Font.GothamBold
+	title.Font = Enum.Font.GothamMedium
 	title.Text = Window.Title
 	title.TextColor3 = Color3.fromRGB(255, 255, 255)
 	title.TextSize = 14
@@ -113,12 +112,11 @@ function SeizureUI:CreateWindow(config)
 	TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 	TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-	-- Calculate dynamic sizes based on window size
 	local windowWidth = Window.Size.X.Offset
 	local windowHeight = Window.Size.Y.Offset
-	local tabContainerHeight = windowHeight * 0.765 -- 76.5% of window height
-	local contentContainerWidth = windowWidth * 0.754 -- 75.4% of window width
-	local contentContainerHeight = windowHeight * 0.816 -- 81.6% of window height
+	local tabContainerHeight = windowHeight * 0.765
+	local contentContainerWidth = windowWidth * 0.754
+	local contentContainerHeight = windowHeight * 0.816
 
 	local TabContainer = Instance.new("Frame")
 	TabContainer.Name = "TabContainer"
@@ -414,6 +412,67 @@ function SeizureUI:CreateWindow(config)
 			end)
 
 			return toggleFrame
+		end
+
+		function Tab:CreateParagraph(paragraphConfig)
+			local paragraphFrame = Instance.new("Frame")
+			paragraphFrame.Name = "Paragraph"
+			paragraphFrame.Parent = TabContent
+			paragraphFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			paragraphFrame.BorderSizePixel = 0
+			paragraphFrame.Size = UDim2.new(1, 0, 0, 0)
+			paragraphFrame.BackgroundTransparency = 1
+			paragraphFrame.AutomaticSize = Enum.AutomaticSize.Y
+
+			TweenService:Create(paragraphFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+
+			local paragraphCorner = Instance.new("UICorner")
+			paragraphCorner.CornerRadius = UDim.new(0.1, 0)
+			paragraphCorner.Parent = paragraphFrame
+
+			local paragraphPadding = Instance.new("UIPadding")
+			paragraphPadding.Parent = paragraphFrame
+			paragraphPadding.PaddingTop = UDim.new(0, 12)
+			paragraphPadding.PaddingBottom = UDim.new(0, 12)
+			paragraphPadding.PaddingLeft = UDim.new(0, 12)
+			paragraphPadding.PaddingRight = UDim.new(0, 12)
+
+			local titleLabel = Instance.new("TextLabel")
+			titleLabel.Name = "Title"
+			titleLabel.Parent = paragraphFrame
+			titleLabel.BackgroundTransparency = 1
+			titleLabel.Size = UDim2.new(1, 0, 0, 0)
+			titleLabel.Font = Enum.Font.GothamMedium
+			titleLabel.Text = paragraphConfig.Title or "Title"
+			titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			titleLabel.TextSize = 14
+			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+			titleLabel.TextYAlignment = Enum.TextYAlignment.Top
+			titleLabel.TextWrapped = true
+			titleLabel.AutomaticSize = Enum.AutomaticSize.Y
+			titleLabel.TextTransparency = 1
+
+			local contentLabel = Instance.new("TextLabel")
+			contentLabel.Name = "Content"
+			contentLabel.Parent = paragraphFrame
+			contentLabel.BackgroundTransparency = 1
+			contentLabel.Position = UDim2.new(0, 0, 0, 20)
+			contentLabel.Size = UDim2.new(1, 0, 0, 0)
+			contentLabel.Font = Enum.Font.Gotham
+			contentLabel.Text = paragraphConfig.Content or "Content"
+			contentLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+			contentLabel.TextSize = 13
+			contentLabel.TextXAlignment = Enum.TextXAlignment.Left
+			contentLabel.TextYAlignment = Enum.TextYAlignment.Top
+			contentLabel.TextWrapped = true
+			contentLabel.AutomaticSize = Enum.AutomaticSize.Y
+			contentLabel.TextTransparency = 1
+
+			task.wait(0.1)
+			TweenService:Create(titleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+			TweenService:Create(contentLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+
+			return paragraphFrame
 		end
 
 		return Tab
