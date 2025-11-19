@@ -25,11 +25,11 @@ function SeizureUI:CreateWindow(config)
 	Window.Icon = Window.Config.Icon or "rbxassetid://156513166"
 
 	local requestedSize = Window.Config.Size or UDim2.new(0, 652, 0, 392)
-	local minWidth = 400
-	local minHeight = 250
-	local width = math.max(requestedSize.X.Offset, minWidth)
-	local height = math.max(requestedSize.Y.Offset, minHeight)
-	Window.Size = UDim2.new(0, width, 0, height)
+	local minW = 400
+	local minH = 250
+	local w = math.max(requestedSize.X.Offset, minW)
+	local h = math.max(requestedSize.Y.Offset, minH)
+	Window.Size = UDim2.new(0, w, 0, h)
 
 	Window.Tabs = {}
 	Window.CurrentTab = nil
@@ -47,22 +47,22 @@ function SeizureUI:CreateWindow(config)
 		ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	end
 
-	local Background = Instance.new("Frame")
-	Background.Name = "Background"
-	Background.Parent = ScreenGui
-	Background.AnchorPoint = Vector2.new(0.5, 0.5)
-	Background.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
-	Background.BorderSizePixel = 0
-	Background.Position = UDim2.new(0.5, 0, 0.5, 0)
-	Background.Size = UDim2.new(0, 0, 0, 0)
-	Background.ClipsDescendants = true
-	Background.BackgroundTransparency = 1
+	local bg = Instance.new("Frame")
+	bg.Name = "Background"
+	bg.Parent = ScreenGui
+	bg.AnchorPoint = Vector2.new(0.5, 0.5)
+	bg.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
+	bg.BorderSizePixel = 0
+	bg.Position = UDim2.new(0.5, 0, 0.5, 0)
+	bg.Size = UDim2.new(0, 0, 0, 0)
+	bg.ClipsDescendants = true
+	bg.BackgroundTransparency = 1
 
-	local UICorner = Instance.new("UICorner")
-	UICorner.CornerRadius = UDim.new(0.02, 0)
-	UICorner.Parent = Background
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.02, 0)
+	corner.Parent = bg
 
-	local introTween = TweenService:Create(Background, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+	local introTween = TweenService:Create(bg, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 		Size = Window.Size,
 		BackgroundTransparency = 0
 	})
@@ -70,20 +70,20 @@ function SeizureUI:CreateWindow(config)
 
 	local icon = Instance.new("ImageLabel")
 	icon.Name = "icon"
-	icon.Parent = Background
+	icon.Parent = bg
 	icon.BackgroundTransparency = 1
 	icon.Position = UDim2.new(0.02, 0, 0.028, 0)
 	icon.Size = UDim2.new(0, 35, 0, 35)
 	icon.Image = Window.Icon
 	icon.ImageTransparency = 1
 
-	local iconCorner = Instance.new("UICorner")
-	iconCorner.CornerRadius = UDim.new(0.2, 0)
-	iconCorner.Parent = icon
+	local iconC = Instance.new("UICorner")
+	iconC.CornerRadius = UDim.new(0.2, 0)
+	iconC.Parent = icon
 
 	local title = Instance.new("TextLabel")
 	title.Name = "title"
-	title.Parent = Background
+	title.Parent = bg
 	title.BackgroundTransparency = 1
 	title.Position = UDim2.new(0.094, 0, 0.028, 0)
 	title.Size = UDim2.new(0, 548, 0, 21)
@@ -96,7 +96,7 @@ function SeizureUI:CreateWindow(config)
 
 	local subtitle = Instance.new("TextLabel")
 	subtitle.Name = "subtitle"
-	subtitle.Parent = Background
+	subtitle.Parent = bg
 	subtitle.BackgroundTransparency = 1
 	subtitle.Position = UDim2.new(0.094, 0, 0.064, 0)
 	subtitle.Size = UDim2.new(0, 548, 0, 21)
@@ -112,18 +112,18 @@ function SeizureUI:CreateWindow(config)
 	TweenService:Create(title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 	TweenService:Create(subtitle, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-	local windowWidth = Window.Size.X.Offset
-	local windowHeight = Window.Size.Y.Offset
-	local tabContainerHeight = windowHeight * 0.765
-	local contentContainerWidth = windowWidth * 0.754
-	local contentContainerHeight = windowHeight * 0.816
+	local wWidth = Window.Size.X.Offset
+	local wHeight = Window.Size.Y.Offset
+	local tabH = wHeight * 0.765
+	local contentW = wWidth * 0.754
+	local contentH = wHeight * 0.816
 
 	local TabContainer = Instance.new("Frame")
 	TabContainer.Name = "TabContainer"
-	TabContainer.Parent = Background
+	TabContainer.Parent = bg
 	TabContainer.BackgroundTransparency = 1
 	TabContainer.Position = UDim2.new(0.019, 0, 0.145, 0)
-	TabContainer.Size = UDim2.new(0, 120, 0, tabContainerHeight)
+	TabContainer.Size = UDim2.new(0, 120, 0, tabH)
 
 	local TabLayout = Instance.new("UIListLayout")
 	TabLayout.Parent = TabContainer
@@ -132,20 +132,21 @@ function SeizureUI:CreateWindow(config)
 
 	local ContentContainer = Instance.new("Frame")
 	ContentContainer.Name = "ContentContainer"
-	ContentContainer.Parent = Background
+	ContentContainer.Parent = bg
 	ContentContainer.BackgroundTransparency = 1
 	ContentContainer.Position = UDim2.new(0.22, 0, 0.143, 0)
-	ContentContainer.Size = UDim2.new(0, contentContainerWidth, 0, contentContainerHeight)
+	ContentContainer.Size = UDim2.new(0, contentW, 0, contentH)
 
 	local dragging = false
-	local dragStart, startPos
+	local dragStart
+	local startPos
 	local dragTween
 
-	Background.InputBegan:Connect(function(input)
+	bg.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
 			dragStart = input.Position
-			startPos = Background.Position
+			startPos = bg.Position
 
 			if dragTween then
 				dragTween:Cancel()
@@ -153,7 +154,7 @@ function SeizureUI:CreateWindow(config)
 		end
 	end)
 
-	Background.InputEnded:Connect(function(input)
+	bg.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = false
 		end
@@ -162,7 +163,7 @@ function SeizureUI:CreateWindow(config)
 	UserInputService.InputChanged:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
 			local delta = input.Position - dragStart
-			local newPosition = UDim2.new(
+			local newPos = UDim2.new(
 				startPos.X.Scale,
 				startPos.X.Offset + delta.X,
 				startPos.Y.Scale,
@@ -172,8 +173,8 @@ function SeizureUI:CreateWindow(config)
 			if dragTween then
 				dragTween:Cancel()
 			end
-			dragTween = TweenService:Create(Background, TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-				Position = newPosition
+			dragTween = TweenService:Create(bg, TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+				Position = newPos
 			})
 			dragTween:Play()
 		end
@@ -199,24 +200,24 @@ function SeizureUI:CreateWindow(config)
 		task.wait(0.05)
 		TweenService:Create(TabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-		local TabContent = Instance.new("ScrollingFrame")
-		TabContent.Name = "Content_" .. Tab.Name
-		TabContent.Parent = ContentContainer
-		TabContent.BackgroundTransparency = 1
-		TabContent.BorderSizePixel = 0
-		TabContent.Size = UDim2.new(1, 0, 1, 0)
-		TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-		TabContent.ScrollBarThickness = 4
-		TabContent.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-		TabContent.Visible = false
+		local tabContent = Instance.new("ScrollingFrame")
+		tabContent.Name = "Content_" .. Tab.Name
+		tabContent.Parent = ContentContainer
+		tabContent.BackgroundTransparency = 1
+		tabContent.BorderSizePixel = 0
+		tabContent.Size = UDim2.new(1, 0, 1, 0)
+		tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+		tabContent.ScrollBarThickness = 4
+		tabContent.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+		tabContent.Visible = false
 
 		local ContentLayout = Instance.new("UIListLayout")
-		ContentLayout.Parent = TabContent
+		ContentLayout.Parent = tabContent
 		ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		ContentLayout.Padding = UDim.new(0, 8)
 
 		ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-			TabContent.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 10)
+			tabContent.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 10)
 		end)
 
 		TabButton.MouseButton1Click:Connect(function()
@@ -226,7 +227,7 @@ function SeizureUI:CreateWindow(config)
 			end
 
 			TweenService:Create(TabButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-			TabContent.Visible = true
+			tabContent.Visible = true
 
 			Window.CurrentTab = Tab
 		end)
@@ -244,60 +245,60 @@ function SeizureUI:CreateWindow(config)
 		end)
 
 		Tab.Button = TabButton
-		Tab.Content = TabContent
+		Tab.Content = tabContent
 
 		if #Window.Tabs == 0 then
 			TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-			TabContent.Visible = true
+			tabContent.Visible = true
 			Window.CurrentTab = Tab
 		end
 
 		table.insert(Window.Tabs, Tab)
 
 		function Tab:CreateButton(buttonConfig)
-			local buttonFrame = Instance.new("Frame")
-			buttonFrame.Name = "Button"
-			buttonFrame.Parent = TabContent
-			buttonFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-			buttonFrame.BorderSizePixel = 0
-			buttonFrame.Size = UDim2.new(1, 0, 0, 42)
-			buttonFrame.BackgroundTransparency = 1
+			local btnFrame = Instance.new("Frame")
+			btnFrame.Name = "Button"
+			btnFrame.Parent = tabContent
+			btnFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			btnFrame.BorderSizePixel = 0
+			btnFrame.Size = UDim2.new(1, 0, 0, 42)
+			btnFrame.BackgroundTransparency = 1
 
-			TweenService:Create(buttonFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+			TweenService:Create(btnFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 
-			local buttonCorner = Instance.new("UICorner")
-			buttonCorner.CornerRadius = UDim.new(0.1, 0)
-			buttonCorner.Parent = buttonFrame
+			local btnCorner = Instance.new("UICorner")
+			btnCorner.CornerRadius = UDim.new(0.1, 0)
+			btnCorner.Parent = btnFrame
 
-			local buttonLabel = Instance.new("TextLabel")
-			buttonLabel.Parent = buttonFrame
-			buttonLabel.BackgroundTransparency = 1
-			buttonLabel.Position = UDim2.new(0.026, 0, 0, 0)
-			buttonLabel.Size = UDim2.new(0.95, 0, 1, 0)
-			buttonLabel.Font = Enum.Font.GothamMedium
-			buttonLabel.Text = buttonConfig.Name or "Button"
-			buttonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			buttonLabel.TextSize = 14
-			buttonLabel.TextXAlignment = Enum.TextXAlignment.Left
-			buttonLabel.TextTransparency = 1
+			local btnLabel = Instance.new("TextLabel")
+			btnLabel.Parent = btnFrame
+			btnLabel.BackgroundTransparency = 1
+			btnLabel.Position = UDim2.new(0.026, 0, 0, 0)
+			btnLabel.Size = UDim2.new(0.95, 0, 1, 0)
+			btnLabel.Font = Enum.Font.GothamMedium
+			btnLabel.Text = buttonConfig.Name or "Button"
+			btnLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			btnLabel.TextSize = 14
+			btnLabel.TextXAlignment = Enum.TextXAlignment.Left
+			btnLabel.TextTransparency = 1
 
 			task.wait(0.1)
-			TweenService:Create(buttonLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+			TweenService:Create(btnLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-			local clickButton = Instance.new("TextButton")
-			clickButton.Parent = buttonFrame
-			clickButton.BackgroundTransparency = 1
-			clickButton.Size = UDim2.new(1, 0, 1, 0)
-			clickButton.Text = ""
+			local clickBtn = Instance.new("TextButton")
+			clickBtn.Parent = btnFrame
+			clickBtn.BackgroundTransparency = 1
+			clickBtn.Size = UDim2.new(1, 0, 1, 0)
+			clickBtn.Text = ""
 
-			clickButton.MouseButton1Click:Connect(function()
-				local originalSize = buttonFrame.Size
-				TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			clickBtn.MouseButton1Click:Connect(function()
+				local origSize = btnFrame.Size
+				TweenService:Create(btnFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					Size = UDim2.new(1, -4, 0, 38)
 				}):Play()
 				task.wait(0.1)
-				TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-					Size = originalSize
+				TweenService:Create(btnFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					Size = origSize
 				}):Play()
 
 				if buttonConfig.Callback then
@@ -305,67 +306,67 @@ function SeizureUI:CreateWindow(config)
 				end
 			end)
 
-			clickButton.MouseEnter:Connect(function()
-				TweenService:Create(buttonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			clickBtn.MouseEnter:Connect(function()
+				TweenService:Create(btnFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(30, 30, 30),
 					Size = UDim2.new(1, 0, 0, 44)
 				}):Play()
 			end)
 
-			clickButton.MouseLeave:Connect(function()
-				TweenService:Create(buttonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			clickBtn.MouseLeave:Connect(function()
+				TweenService:Create(btnFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(20, 20, 20),
 					Size = UDim2.new(1, 0, 0, 42)
 				}):Play()
 			end)
 
-			return buttonFrame
+			return btnFrame
 		end
 
 		function Tab:CreateToggle(toggleConfig)
-			local toggleFrame = Instance.new("Frame")
-			toggleFrame.Name = "Toggle"
-			toggleFrame.Parent = TabContent
-			toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-			toggleFrame.BorderSizePixel = 0
-			toggleFrame.Size = UDim2.new(1, 0, 0, 42)
-			toggleFrame.BackgroundTransparency = 1
+			local togFrame = Instance.new("Frame")
+			togFrame.Name = "Toggle"
+			togFrame.Parent = tabContent
+			togFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			togFrame.BorderSizePixel = 0
+			togFrame.Size = UDim2.new(1, 0, 0, 42)
+			togFrame.BackgroundTransparency = 1
 
-			TweenService:Create(toggleFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+			TweenService:Create(togFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 
-			local toggleCorner = Instance.new("UICorner")
-			toggleCorner.CornerRadius = UDim.new(0.1, 0)
-			toggleCorner.Parent = toggleFrame
+			local togCorner = Instance.new("UICorner")
+			togCorner.CornerRadius = UDim.new(0.1, 0)
+			togCorner.Parent = togFrame
 
-			local toggleLabel = Instance.new("TextLabel")
-			toggleLabel.Parent = toggleFrame
-			toggleLabel.BackgroundTransparency = 1
-			toggleLabel.Position = UDim2.new(0.026, 0, 0, 0)
-			toggleLabel.Size = UDim2.new(0.85, 0, 1, 0)
-			toggleLabel.Font = Enum.Font.GothamMedium
-			toggleLabel.Text = toggleConfig.Name or "Toggle"
-			toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			toggleLabel.TextSize = 14
-			toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-			toggleLabel.TextYAlignment = Enum.TextYAlignment.Center
-			toggleLabel.TextTransparency = 1
+			local togLabel = Instance.new("TextLabel")
+			togLabel.Parent = togFrame
+			togLabel.BackgroundTransparency = 1
+			togLabel.Position = UDim2.new(0.026, 0, 0, 0)
+			togLabel.Size = UDim2.new(0.85, 0, 1, 0)
+			togLabel.Font = Enum.Font.GothamMedium
+			togLabel.Text = toggleConfig.Name or "Toggle"
+			togLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			togLabel.TextSize = 14
+			togLabel.TextXAlignment = Enum.TextXAlignment.Left
+			togLabel.TextYAlignment = Enum.TextYAlignment.Center
+			togLabel.TextTransparency = 1
 
 			task.wait(0.1)
-			TweenService:Create(toggleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+			TweenService:Create(togLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-			local toggleState = toggleConfig.Default or false
+			local state = toggleConfig.Default or false
 
 			local checkBox = Instance.new("Frame")
-			checkBox.Parent = toggleFrame
+			checkBox.Parent = togFrame
 			checkBox.AnchorPoint = Vector2.new(1, 0.5)
-			checkBox.BackgroundColor3 = toggleState and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 40)
+			checkBox.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 40)
 			checkBox.BorderSizePixel = 0
 			checkBox.Position = UDim2.new(0.975, 0, 0.5, 0)
 			checkBox.Size = UDim2.new(0, 20, 0, 20)
 
-			local checkCorner = Instance.new("UICorner")
-			checkCorner.CornerRadius = UDim.new(0.2, 0)
-			checkCorner.Parent = checkBox
+			local checkC = Instance.new("UICorner")
+			checkC.CornerRadius = UDim.new(0.2, 0)
+			checkC.Parent = checkBox
 
 			local checkMark = Instance.new("ImageLabel")
 			checkMark.Parent = checkBox
@@ -375,104 +376,126 @@ function SeizureUI:CreateWindow(config)
 			checkMark.Size = UDim2.new(0.7, 0, 0.7, 0)
 			checkMark.Image = "rbxassetid://10709790644"
 			checkMark.ImageColor3 = Color3.fromRGB(0, 0, 0)
-			checkMark.ImageTransparency = toggleState and 0 or 1
+			checkMark.ImageTransparency = state and 0 or 1
 
-			local clickButton = Instance.new("TextButton")
-			clickButton.Parent = toggleFrame
-			clickButton.BackgroundTransparency = 1
-			clickButton.Size = UDim2.new(1, 0, 1, 0)
-			clickButton.Text = ""
+			local clickBtn = Instance.new("TextButton")
+			clickBtn.Parent = togFrame
+			clickBtn.BackgroundTransparency = 1
+			clickBtn.Size = UDim2.new(1, 0, 1, 0)
+			clickBtn.Text = ""
 
-			clickButton.MouseButton1Click:Connect(function()
-				toggleState = not toggleState
+			clickBtn.MouseButton1Click:Connect(function()
+				state = not state
 
 				TweenService:Create(checkBox, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-					BackgroundColor3 = toggleState and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 40)
+					BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 40)
 				}):Play()
 
 				TweenService:Create(checkMark, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-					ImageTransparency = toggleState and 0 or 1
+					ImageTransparency = state and 0 or 1
 				}):Play()
 
 				if toggleConfig.Callback then
-					toggleConfig.Callback(toggleState)
+					toggleConfig.Callback(state)
 				end
 			end)
 
-			clickButton.MouseEnter:Connect(function()
-				TweenService:Create(toggleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			clickBtn.MouseEnter:Connect(function()
+				TweenService:Create(togFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 				}):Play()
 			end)
 
-			clickButton.MouseLeave:Connect(function()
-				TweenService:Create(toggleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			clickBtn.MouseLeave:Connect(function()
+				TweenService:Create(togFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 					BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 				}):Play()
 			end)
 
-			return toggleFrame
+			return togFrame
 		end
 
 		function Tab:CreateParagraph(paragraphConfig)
-			local paragraphFrame = Instance.new("Frame")
-			paragraphFrame.Name = "Paragraph"
-			paragraphFrame.Parent = TabContent
-			paragraphFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-			paragraphFrame.BorderSizePixel = 0
-			paragraphFrame.Size = UDim2.new(1, 0, 0, 0)
-			paragraphFrame.BackgroundTransparency = 1
-			paragraphFrame.AutomaticSize = Enum.AutomaticSize.Y
+			local paraFrame = Instance.new("Frame")
+			paraFrame.Name = "Paragraph"
+			paraFrame.Parent = tabContent
+			paraFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			paraFrame.BorderSizePixel = 0
+			paraFrame.Size = UDim2.new(1, 0, 0, 0)
+			paraFrame.BackgroundTransparency = 1
+			paraFrame.AutomaticSize = Enum.AutomaticSize.Y
 
-			TweenService:Create(paragraphFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+			TweenService:Create(paraFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 
-			local paragraphCorner = Instance.new("UICorner")
-			paragraphCorner.CornerRadius = UDim.new(0.1, 0)
-			paragraphCorner.Parent = paragraphFrame
+			local paraCorner = Instance.new("UICorner")
+			paraCorner.CornerRadius = UDim.new(0.05, 0)
+			paraCorner.Parent = paraFrame
 
-			local paragraphPadding = Instance.new("UIPadding")
-			paragraphPadding.Parent = paragraphFrame
-			paragraphPadding.PaddingTop = UDim.new(0, 12)
-			paragraphPadding.PaddingBottom = UDim.new(0, 12)
-			paragraphPadding.PaddingLeft = UDim.new(0, 12)
-			paragraphPadding.PaddingRight = UDim.new(0, 12)
+			local paraPadding = Instance.new("UIPadding")
+			paraPadding.Parent = paraFrame
+			paraPadding.PaddingTop = UDim.new(0, 12)
+			paraPadding.PaddingBottom = UDim.new(0, 12)
+			paraPadding.PaddingLeft = UDim.new(0, 12)
+			paraPadding.PaddingRight = UDim.new(0, 12)
 
-			local titleLabel = Instance.new("TextLabel")
-			titleLabel.Name = "Title"
-			titleLabel.Parent = paragraphFrame
-			titleLabel.BackgroundTransparency = 1
-			titleLabel.Size = UDim2.new(1, 0, 0, 0)
-			titleLabel.Font = Enum.Font.GothamMedium
-			titleLabel.Text = paragraphConfig.Title or "Title"
-			titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			titleLabel.TextSize = 14
-			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-			titleLabel.TextYAlignment = Enum.TextYAlignment.Top
-			titleLabel.TextWrapped = true
-			titleLabel.AutomaticSize = Enum.AutomaticSize.Y
-			titleLabel.TextTransparency = 1
+			local titleLbl = Instance.new("TextLabel")
+			titleLbl.Name = "Title"
+			titleLbl.Parent = paraFrame
+			titleLbl.BackgroundTransparency = 1
+			titleLbl.Size = UDim2.new(1, 0, 0, 0)
+			titleLbl.Font = Enum.Font.GothamMedium
+			titleLbl.Text = paragraphConfig.Title or "Title"
+			titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+			titleLbl.TextSize = 14
+			titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+			titleLbl.TextYAlignment = Enum.TextYAlignment.Top
+			titleLbl.TextWrapped = true
+			titleLbl.AutomaticSize = Enum.AutomaticSize.Y
+			titleLbl.TextTransparency = 1
 
-			local contentLabel = Instance.new("TextLabel")
-			contentLabel.Name = "Content"
-			contentLabel.Parent = paragraphFrame
-			contentLabel.BackgroundTransparency = 1
-			contentLabel.Position = UDim2.new(0, 0, 0, 20)
-			contentLabel.Size = UDim2.new(1, 0, 0, 0)
-			contentLabel.Font = Enum.Font.Gotham
-			contentLabel.Text = paragraphConfig.Content or "Content"
-			contentLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-			contentLabel.TextSize = 13
-			contentLabel.TextXAlignment = Enum.TextXAlignment.Left
-			contentLabel.TextYAlignment = Enum.TextYAlignment.Top
-			contentLabel.TextWrapped = true
-			contentLabel.AutomaticSize = Enum.AutomaticSize.Y
-			contentLabel.TextTransparency = 1
+			local contentLbl = Instance.new("TextLabel")
+			contentLbl.Name = "Content"
+			contentLbl.Parent = paraFrame
+			contentLbl.BackgroundTransparency = 1
+			contentLbl.Position = UDim2.new(0, 0, 0, 20)
+			contentLbl.Size = UDim2.new(1, 0, 0, 0)
+			contentLbl.Font = Enum.Font.Gotham
+			contentLbl.Text = paragraphConfig.Content or "Content"
+			contentLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
+			contentLbl.TextSize = 13
+			contentLbl.TextXAlignment = Enum.TextXAlignment.Left
+			contentLbl.TextYAlignment = Enum.TextYAlignment.Top
+			contentLbl.TextWrapped = true
+			contentLbl.AutomaticSize = Enum.AutomaticSize.Y
+			contentLbl.TextTransparency = 1
 
 			task.wait(0.1)
-			TweenService:Create(titleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-			TweenService:Create(contentLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+			TweenService:Create(titleLbl, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+			TweenService:Create(contentLbl, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-			return paragraphFrame
+			return paraFrame
+		end
+
+		function Tab:CreateDivider()
+			local divFrame = Instance.new("Frame")
+			divFrame.Name = "Divider"
+			divFrame.Parent = tabContent
+			divFrame.BackgroundTransparency = 1
+			divFrame.Size = UDim2.new(1, 0, 0, 12)
+
+			local line = Instance.new("Frame")
+			line.Parent = divFrame
+			line.AnchorPoint = Vector2.new(0, 0.5)
+			line.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+			line.BorderSizePixel = 0
+			line.Position = UDim2.new(0, 0, 0.5, 0)
+			line.Size = UDim2.new(1, 0, 0, 1)
+			line.BackgroundTransparency = 1
+
+			task.wait(0.1)
+			TweenService:Create(line, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+
+			return divFrame
 		end
 
 		return Tab
