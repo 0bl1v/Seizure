@@ -7,6 +7,17 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 
+-- Helper function to create instances
+local function New(ClassName, Properties)
+	local Object = Instance.new(ClassName)
+	if Properties then
+		for Property, Value in next, Properties do
+			Object[Property] = Value
+		end
+	end
+	return Object
+end
+
 -- Theme definitions
 SeizureUI.Themes = {
 	Dark = {
@@ -38,6 +49,16 @@ SeizureUI.Themes = {
 		Accent = Color3.fromRGB(100, 220, 255),
 		CheckboxOff = Color3.fromRGB(45, 70, 100),
 		Divider = Color3.fromRGB(45, 70, 100),
+	},
+	Neon = {
+		Background = Color3.fromRGB(10, 10, 20),
+		ElementBackground = Color3.fromRGB(20, 20, 40),
+		ElementHover = Color3.fromRGB(30, 30, 60),
+		TextPrimary = Color3.fromRGB(0, 255, 150),
+		TextSecondary = Color3.fromRGB(0, 180, 120),
+		Accent = Color3.fromRGB(255, 0, 200),
+		CheckboxOff = Color3.fromRGB(40, 40, 80),
+		Divider = Color3.fromRGB(40, 40, 80),
 	},
 	Sunset = {
 		Background = Color3.fromRGB(40, 25, 20),
@@ -89,10 +110,11 @@ function SeizureUI:CreateWindow(config)
 	Window.Tabs = {}
 	Window.CurrentTab = nil
 
-	local ScreenGui = Instance.new("ScreenGui")
-	ScreenGui.Name = "SeizureUI"
-	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	ScreenGui.ResetOnSpawn = false
+	local ScreenGui = New("ScreenGui", {
+		Name = "SeizureUI",
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+		ResetOnSpawn = false
+	})
 
 	pcall(function()
 		ScreenGui.Parent = getParent()
@@ -102,20 +124,22 @@ function SeizureUI:CreateWindow(config)
 		ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	end
 
-	local bg = Instance.new("Frame")
-	bg.Name = "Background"
-	bg.Parent = ScreenGui
-	bg.AnchorPoint = Vector2.new(0.5, 0.5)
-	bg.BackgroundColor3 = Window.Theme.Background
-	bg.BorderSizePixel = 0
-	bg.Position = UDim2.new(0.5, 0, 0.5, 0)
-	bg.Size = UDim2.new(0, 0, 0, 0)
-	bg.ClipsDescendants = true
-	bg.BackgroundTransparency = 1
+	local bg = New("Frame", {
+		Name = "Background",
+		Parent = ScreenGui,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		BackgroundColor3 = Window.Theme.Background,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		Size = UDim2.new(0, 0, 0, 0),
+		ClipsDescendants = true,
+		BackgroundTransparency = 1
+	})
 
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0.02, 0)
-	corner.Parent = bg
+	local corner = New("UICorner", {
+		CornerRadius = UDim.new(0.02, 0),
+		Parent = bg
+	})
 
 	local introTween = TweenService:Create(bg, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 		Size = Window.Size,
@@ -123,44 +147,48 @@ function SeizureUI:CreateWindow(config)
 	})
 	introTween:Play()
 
-	local icon = Instance.new("ImageLabel")
-	icon.Name = "icon"
-	icon.Parent = bg
-	icon.BackgroundTransparency = 1
-	icon.Position = UDim2.new(0.02, 0, 0.028, 0)
-	icon.Size = UDim2.new(0, 35, 0, 35)
-	icon.Image = Window.Icon
-	icon.ImageTransparency = 1
+	local icon = New("ImageLabel", {
+		Name = "icon",
+		Parent = bg,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0.02, 0, 0.028, 0),
+		Size = UDim2.new(0, 35, 0, 35),
+		Image = Window.Icon,
+		ImageTransparency = 1
+	})
 
-	local iconC = Instance.new("UICorner")
-	iconC.CornerRadius = UDim.new(0.2, 0)
-	iconC.Parent = icon
+	local iconC = New("UICorner", {
+		CornerRadius = UDim.new(0.2, 0),
+		Parent = icon
+	})
 
-	local title = Instance.new("TextLabel")
-	title.Name = "title"
-	title.Parent = bg
-	title.BackgroundTransparency = 1
-	title.Position = UDim2.new(0.094, 0, 0.028, 0)
-	title.Size = UDim2.new(0, 548, 0, 21)
-	title.Font = Enum.Font.GothamMedium
-	title.Text = Window.Title
-	title.TextColor3 = Window.Theme.TextPrimary
-	title.TextSize = 14
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.TextTransparency = 1
+	local title = New("TextLabel", {
+		Name = "title",
+		Parent = bg,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0.094, 0, 0.028, 0),
+		Size = UDim2.new(0, 548, 0, 21),
+		Font = Enum.Font.GothamMedium,
+		Text = Window.Title,
+		TextColor3 = Window.Theme.TextPrimary,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTransparency = 1
+	})
 
-	local subtitle = Instance.new("TextLabel")
-	subtitle.Name = "subtitle"
-	subtitle.Parent = bg
-	subtitle.BackgroundTransparency = 1
-	subtitle.Position = UDim2.new(0.094, 0, 0.064, 0)
-	subtitle.Size = UDim2.new(0, 548, 0, 21)
-	subtitle.Font = Enum.Font.Gotham
-	subtitle.Text = Window.Description
-	subtitle.TextColor3 = Window.Theme.TextSecondary
-	subtitle.TextSize = 12
-	subtitle.TextXAlignment = Enum.TextXAlignment.Left
-	subtitle.TextTransparency = 1
+	local subtitle = New("TextLabel", {
+		Name = "subtitle",
+		Parent = bg,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0.094, 0, 0.064, 0),
+		Size = UDim2.new(0, 548, 0, 21),
+		Font = Enum.Font.Gotham,
+		Text = Window.Description,
+		TextColor3 = Window.Theme.TextSecondary,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTransparency = 1
+	})
 
 	task.wait(0.3)
 	TweenService:Create(icon, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
@@ -173,24 +201,27 @@ function SeizureUI:CreateWindow(config)
 	local contentW = wWidth * 0.754
 	local contentH = wHeight * 0.816
 
-	local TabContainer = Instance.new("Frame")
-	TabContainer.Name = "TabContainer"
-	TabContainer.Parent = bg
-	TabContainer.BackgroundTransparency = 1
-	TabContainer.Position = UDim2.new(0.019, 0, 0.145, 0)
-	TabContainer.Size = UDim2.new(0, 120, 0, tabH)
+	local TabContainer = New("Frame", {
+		Name = "TabContainer",
+		Parent = bg,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0.019, 0, 0.145, 0),
+		Size = UDim2.new(0, 120, 0, tabH)
+	})
 
-	local TabLayout = Instance.new("UIListLayout")
-	TabLayout.Parent = TabContainer
-	TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	TabLayout.Padding = UDim.new(0, 8)
+	local TabLayout = New("UIListLayout", {
+		Parent = TabContainer,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Padding = UDim.new(0, 8)
+	})
 
-	local ContentContainer = Instance.new("Frame")
-	ContentContainer.Name = "ContentContainer"
-	ContentContainer.Parent = bg
-	ContentContainer.BackgroundTransparency = 1
-	ContentContainer.Position = UDim2.new(0.22, 0, 0.143, 0)
-	ContentContainer.Size = UDim2.new(0, contentW, 0, contentH)
+	local ContentContainer = New("Frame", {
+		Name = "ContentContainer",
+		Parent = bg,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0.22, 0, 0.143, 0),
+		Size = UDim2.new(0, contentW, 0, contentH)
+	})
 
 	local dragging = false
 	local dragStart
@@ -247,36 +278,39 @@ function SeizureUI:CreateWindow(config)
 		Tab.Name = tabConfig.Name or "Tab"
 		Tab.Elements = {}
 
-		local TabButton = Instance.new("TextButton")
-		TabButton.Name = "Tab_" .. Tab.Name
-		TabButton.Parent = TabContainer
-		TabButton.BackgroundTransparency = 1
-		TabButton.Size = UDim2.new(1, 0, 0, 21)
-		TabButton.Font = Enum.Font.Gotham
-		TabButton.Text = Tab.Name
-		TabButton.TextColor3 = Window.Theme.TextSecondary
-		TabButton.TextSize = 14
-		TabButton.TextXAlignment = Enum.TextXAlignment.Left
-		TabButton.TextTransparency = 1
+		local TabButton = New("TextButton", {
+			Name = "Tab_" .. Tab.Name,
+			Parent = TabContainer,
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 21),
+			Font = Enum.Font.Gotham,
+			Text = Tab.Name,
+			TextColor3 = Window.Theme.TextSecondary,
+			TextSize = 14,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextTransparency = 1
+		})
 
 		task.wait(0.05)
 		TweenService:Create(TabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-		local tabContent = Instance.new("ScrollingFrame")
-		tabContent.Name = "Content_" .. Tab.Name
-		tabContent.Parent = ContentContainer
-		tabContent.BackgroundTransparency = 1
-		tabContent.BorderSizePixel = 0
-		tabContent.Size = UDim2.new(1, 0, 1, 0)
-		tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-		tabContent.ScrollBarThickness = 4
-		tabContent.ScrollBarImageColor3 = Window.Theme.Accent
-		tabContent.Visible = false
+		local tabContent = New("ScrollingFrame", {
+			Name = "Content_" .. Tab.Name,
+			Parent = ContentContainer,
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Size = UDim2.new(1, 0, 1, 0),
+			CanvasSize = UDim2.new(0, 0, 0, 0),
+			ScrollBarThickness = 4,
+			ScrollBarImageTransparency = 1,
+			Visible = false
+		})
 
-		local ContentLayout = Instance.new("UIListLayout")
-		ContentLayout.Parent = tabContent
-		ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-		ContentLayout.Padding = UDim.new(0, 8)
+		local ContentLayout = New("UIListLayout", {
+			Parent = tabContent,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Padding = UDim.new(0, 8)
+		})
 
 		ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 			tabContent.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 10)
@@ -318,40 +352,44 @@ function SeizureUI:CreateWindow(config)
 		table.insert(Window.Tabs, Tab)
 
 		function Tab:CreateButton(buttonConfig)
-			local btnFrame = Instance.new("Frame")
-			btnFrame.Name = "Button"
-			btnFrame.Parent = tabContent
-			btnFrame.BackgroundColor3 = Window.Theme.ElementBackground
-			btnFrame.BorderSizePixel = 0
-			btnFrame.Size = UDim2.new(1, 0, 0, 42)
-			btnFrame.BackgroundTransparency = 1
+			local btnFrame = New("Frame", {
+				Name = "Button",
+				Parent = tabContent,
+				BackgroundColor3 = Window.Theme.ElementBackground,
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, 0, 0, 42),
+				BackgroundTransparency = 1
+			})
 
 			TweenService:Create(btnFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 
-			local btnCorner = Instance.new("UICorner")
-			btnCorner.CornerRadius = UDim.new(0.1, 0)
-			btnCorner.Parent = btnFrame
+			New("UICorner", {
+				CornerRadius = UDim.new(0.1, 0),
+				Parent = btnFrame
+			})
 
-			local btnLabel = Instance.new("TextLabel")
-			btnLabel.Parent = btnFrame
-			btnLabel.BackgroundTransparency = 1
-			btnLabel.Position = UDim2.new(0.026, 0, 0, 0)
-			btnLabel.Size = UDim2.new(0.95, 0, 1, 0)
-			btnLabel.Font = Enum.Font.GothamMedium
-			btnLabel.Text = buttonConfig.Name or "Button"
-			btnLabel.TextColor3 = Window.Theme.TextPrimary
-			btnLabel.TextSize = 14
-			btnLabel.TextXAlignment = Enum.TextXAlignment.Left
-			btnLabel.TextTransparency = 1
+			local btnLabel = New("TextLabel", {
+				Parent = btnFrame,
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0.026, 0, 0, 0),
+				Size = UDim2.new(0.95, 0, 1, 0),
+				Font = Enum.Font.GothamMedium,
+				Text = buttonConfig.Name or "Button",
+				TextColor3 = Window.Theme.TextPrimary,
+				TextSize = 14,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextTransparency = 1
+			})
 
 			task.wait(0.1)
 			TweenService:Create(btnLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-			local clickBtn = Instance.new("TextButton")
-			clickBtn.Parent = btnFrame
-			clickBtn.BackgroundTransparency = 1
-			clickBtn.Size = UDim2.new(1, 0, 1, 0)
-			clickBtn.Text = ""
+			local clickBtn = New("TextButton", {
+				Parent = btnFrame,
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 1, 0),
+				Text = ""
+			})
 
 			clickBtn.MouseButton1Click:Connect(function()
 				local origSize = btnFrame.Size
@@ -386,65 +424,72 @@ function SeizureUI:CreateWindow(config)
 		end
 
 		function Tab:CreateToggle(toggleConfig)
-			local togFrame = Instance.new("Frame")
-			togFrame.Name = "Toggle"
-			togFrame.Parent = tabContent
-			togFrame.BackgroundColor3 = Window.Theme.ElementBackground
-			togFrame.BorderSizePixel = 0
-			togFrame.Size = UDim2.new(1, 0, 0, 42)
-			togFrame.BackgroundTransparency = 1
+			local togFrame = New("Frame", {
+				Name = "Toggle",
+				Parent = tabContent,
+				BackgroundColor3 = Window.Theme.ElementBackground,
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, 0, 0, 42),
+				BackgroundTransparency = 1
+			})
 
 			TweenService:Create(togFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 
-			local togCorner = Instance.new("UICorner")
-			togCorner.CornerRadius = UDim.new(0.1, 0)
-			togCorner.Parent = togFrame
+			local togCorner = New("UICorner", {
+				CornerRadius = UDim.new(0.1, 0),
+				Parent = togFrame
+			})
 
-			local togLabel = Instance.new("TextLabel")
-			togLabel.Parent = togFrame
-			togLabel.BackgroundTransparency = 1
-			togLabel.Position = UDim2.new(0.026, 0, 0, 0)
-			togLabel.Size = UDim2.new(0.85, 0, 1, 0)
-			togLabel.Font = Enum.Font.GothamMedium
-			togLabel.Text = toggleConfig.Name or "Toggle"
-			togLabel.TextColor3 = Window.Theme.TextPrimary
-			togLabel.TextSize = 14
-			togLabel.TextXAlignment = Enum.TextXAlignment.Left
-			togLabel.TextYAlignment = Enum.TextYAlignment.Center
-			togLabel.TextTransparency = 1
+			local togLabel = New("TextLabel", {
+				Parent = togFrame,
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0.026, 0, 0, 0),
+				Size = UDim2.new(0.85, 0, 1, 0),
+				Font = Enum.Font.GothamMedium,
+				Text = toggleConfig.Name or "Toggle",
+				TextColor3 = Window.Theme.TextPrimary,
+				TextSize = 14,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextTransparency = 1
+			})
 
 			task.wait(0.1)
 			TweenService:Create(togLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
 			local state = toggleConfig.Default or false
 
-			local checkBox = Instance.new("Frame")
-			checkBox.Parent = togFrame
-			checkBox.AnchorPoint = Vector2.new(1, 0.5)
-			checkBox.BackgroundColor3 = state and Window.Theme.Accent or Window.Theme.CheckboxOff
-			checkBox.BorderSizePixel = 0
-			checkBox.Position = UDim2.new(0.975, 0, 0.5, 0)
-			checkBox.Size = UDim2.new(0, 20, 0, 20)
+			local checkBox = New("Frame", {
+				Parent = togFrame,
+				AnchorPoint = Vector2.new(1, 0.5),
+				BackgroundColor3 = state and Window.Theme.Accent or Window.Theme.CheckboxOff,
+				BorderSizePixel = 0,
+				Position = UDim2.new(0.975, 0, 0.5, 0),
+				Size = UDim2.new(0, 20, 0, 20)
+			})
 
-			local checkC = Instance.new("UICorner")
-			checkC.CornerRadius = UDim.new(0.2, 0)
-			checkC.Parent = checkBox
+			local checkC = New("UICorner", {
+				CornerRadius = UDim.new(0.2, 0),
+				Parent = checkBox
+			})
 
-			local checkMark = Instance.new("ImageLabel")
-			checkMark.Parent = checkBox
-			checkMark.BackgroundTransparency = 1
-			checkMark.AnchorPoint = Vector2.new(0.5, 0.5)
-			checkMark.Position = UDim2.new(0.5, 0, 0.5, 0)
-			checkMark.Size = UDim2.new(0.7, 0, 0.7, 0)
-			checkMark.Image = "rbxassetid://10709790644"
-			checkMark.ImageColor3 = Window.Theme.ElementBackground
-			checkMark.ImageTransparency = state and 0 or 1
+			local checkMark = New("ImageLabel", {
+				Parent = checkBox,
+				BackgroundTransparency = 1,
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0.5, 0, 0.5, 0),
+				Size = UDim2.new(0.7, 0, 0.7, 0),
+				Image = "rbxassetid://10709790644",
+				ImageColor3 = Window.Theme.ElementBackground,
+				ImageTransparency = state and 0 or 1
+			})
 
-			local clickBtn = Instance.new("TextButton")
-			clickBtn.Parent = togFrame
-			clickBtn.BackgroundTransparency = 1
-			clickBtn.Size = UDim2.new(1, 0, 1, 0)
-			clickBtn.Text = ""
+			local clickBtn = New("TextButton", {
+				Parent = togFrame,
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 1, 0),
+				Text = ""
+			})
 
 			clickBtn.MouseButton1Click:Connect(function()
 				state = not state
@@ -478,58 +523,63 @@ function SeizureUI:CreateWindow(config)
 		end
 
 		function Tab:CreateParagraph(paragraphConfig)
-			local paraFrame = Instance.new("Frame")
-			paraFrame.Name = "Paragraph"
-			paraFrame.Parent = tabContent
-			paraFrame.BackgroundColor3 = Window.Theme.ElementBackground
-			paraFrame.BorderSizePixel = 0
-			paraFrame.Size = UDim2.new(1, 0, 0, 0)
-			paraFrame.BackgroundTransparency = 1
-			paraFrame.AutomaticSize = Enum.AutomaticSize.Y
+			local paraFrame = New("Frame", {
+				Name = "Paragraph",
+				Parent = tabContent,
+				BackgroundColor3 = Window.Theme.ElementBackground,
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, 0, 0, 0),
+				BackgroundTransparency = 1,
+				AutomaticSize = Enum.AutomaticSize.Y
+			})
 
 			TweenService:Create(paraFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 
-			local paraCorner = Instance.new("UICorner")
-			paraCorner.CornerRadius = UDim.new(0.05, 0)
-			paraCorner.Parent = paraFrame
+			local paraCorner = New("UICorner", {
+				CornerRadius = UDim.new(0.05, 0),
+				Parent = paraFrame
+			})
 
-			local paraPadding = Instance.new("UIPadding")
-			paraPadding.Parent = paraFrame
-			paraPadding.PaddingTop = UDim.new(0, 12)
-			paraPadding.PaddingBottom = UDim.new(0, 12)
-			paraPadding.PaddingLeft = UDim.new(0, 12)
-			paraPadding.PaddingRight = UDim.new(0, 12)
+			local paraPadding = New("UIPadding", {
+				Parent = paraFrame,
+				PaddingTop = UDim.new(0, 12),
+				PaddingBottom = UDim.new(0, 12),
+				PaddingLeft = UDim.new(0, 12),
+				PaddingRight = UDim.new(0, 12)
+			})
 
-			local titleLbl = Instance.new("TextLabel")
-			titleLbl.Name = "Title"
-			titleLbl.Parent = paraFrame
-			titleLbl.BackgroundTransparency = 1
-			titleLbl.Size = UDim2.new(1, 0, 0, 0)
-			titleLbl.Font = Enum.Font.GothamMedium
-			titleLbl.Text = paragraphConfig.Title or "Title"
-			titleLbl.TextColor3 = Window.Theme.TextPrimary
-			titleLbl.TextSize = 14
-			titleLbl.TextXAlignment = Enum.TextXAlignment.Left
-			titleLbl.TextYAlignment = Enum.TextYAlignment.Top
-			titleLbl.TextWrapped = true
-			titleLbl.AutomaticSize = Enum.AutomaticSize.Y
-			titleLbl.TextTransparency = 1
+			local titleLbl = New("TextLabel", {
+				Name = "Title",
+				Parent = paraFrame,
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 0, 0),
+				Font = Enum.Font.GothamMedium,
+				Text = paragraphConfig.Title or "Title",
+				TextColor3 = Window.Theme.TextPrimary,
+				TextSize = 14,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Top,
+				TextWrapped = true,
+				AutomaticSize = Enum.AutomaticSize.Y,
+				TextTransparency = 1
+			})
 
-			local contentLbl = Instance.new("TextLabel")
-			contentLbl.Name = "Content"
-			contentLbl.Parent = paraFrame
-			contentLbl.BackgroundTransparency = 1
-			contentLbl.Position = UDim2.new(0, 0, 0, 20)
-			contentLbl.Size = UDim2.new(1, 0, 0, 0)
-			contentLbl.Font = Enum.Font.Gotham
-			contentLbl.Text = paragraphConfig.Content or "Content"
-			contentLbl.TextColor3 = Window.Theme.TextSecondary
-			contentLbl.TextSize = 13
-			contentLbl.TextXAlignment = Enum.TextXAlignment.Left
-			contentLbl.TextYAlignment = Enum.TextYAlignment.Top
-			contentLbl.TextWrapped = true
-			contentLbl.AutomaticSize = Enum.AutomaticSize.Y
-			contentLbl.TextTransparency = 1
+			local contentLbl = New("TextLabel", {
+				Name = "Content",
+				Parent = paraFrame,
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 0, 0, 20),
+				Size = UDim2.new(1, 0, 0, 0),
+				Font = Enum.Font.Gotham,
+				Text = paragraphConfig.Content or "Content",
+				TextColor3 = Window.Theme.TextSecondary,
+				TextSize = 13,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Top,
+				TextWrapped = true,
+				AutomaticSize = Enum.AutomaticSize.Y,
+				TextTransparency = 1
+			})
 
 			task.wait(0.1)
 			TweenService:Create(titleLbl, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
@@ -539,20 +589,22 @@ function SeizureUI:CreateWindow(config)
 		end
 
 		function Tab:CreateDivider()
-			local divFrame = Instance.new("Frame")
-			divFrame.Name = "Divider"
-			divFrame.Parent = tabContent
-			divFrame.BackgroundTransparency = 1
-			divFrame.Size = UDim2.new(1, 0, 0, 12)
+			local divFrame = New("Frame", {
+				Name = "Divider",
+				Parent = tabContent,
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 0, 12)
+			})
 
-			local line = Instance.new("Frame")
-			line.Parent = divFrame
-			line.AnchorPoint = Vector2.new(0, 0.5)
-			line.BackgroundColor3 = Window.Theme.Divider
-			line.BorderSizePixel = 0
-			line.Position = UDim2.new(0, 0, 0.5, 0)
-			line.Size = UDim2.new(1, 0, 0, 1)
-			line.BackgroundTransparency = 1
+			local line = New("Frame", {
+				Parent = divFrame,
+				AnchorPoint = Vector2.new(0, 0.5),
+				BackgroundColor3 = Window.Theme.Divider,
+				BorderSizePixel = 0,
+				Position = UDim2.new(0, 0, 0.5, 0),
+				Size = UDim2.new(1, 0, 0, 1),
+				BackgroundTransparency = 1
+			})
 
 			task.wait(0.1)
 			TweenService:Create(line, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
@@ -561,23 +613,25 @@ function SeizureUI:CreateWindow(config)
 		end
 
 		function Tab:CreateSection(sectionConfig)
-			local sectFrame = Instance.new("Frame")
-			sectFrame.Name = "Section"
-			sectFrame.Parent = tabContent
-			sectFrame.BackgroundTransparency = 1
-			sectFrame.Size = UDim2.new(1, 0, 0, 28)
+			local sectFrame = New("Frame", {
+				Name = "Section",
+				Parent = tabContent,
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 0, 28)
+			})
 
-			local sectLabel = Instance.new("TextLabel")
-			sectLabel.Parent = sectFrame
-			sectLabel.BackgroundTransparency = 1
-			sectLabel.Size = UDim2.new(1, 0, 1, 0)
-			sectLabel.Font = Enum.Font.GothamMedium
-			sectLabel.Text = sectionConfig.Name or "Section"
-			sectLabel.TextColor3 = Window.Theme.Accent
-			sectLabel.TextSize = sectionConfig.Size or 15
-			sectLabel.TextXAlignment = sectionConfig.Side == "Right" and Enum.TextXAlignment.Right or Enum.TextXAlignment.Left
-			sectLabel.TextYAlignment = Enum.TextYAlignment.Center
-			sectLabel.TextTransparency = 1
+			local sectLabel = New("TextLabel", {
+				Parent = sectFrame,
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 1, 0),
+				Font = Enum.Font.GothamMedium,
+				Text = sectionConfig.Name or "Section",
+				TextColor3 = Window.Theme.Accent,
+				TextSize = sectionConfig.Size or 15,
+				TextXAlignment = sectionConfig.Side == "Right" and Enum.TextXAlignment.Right or Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextTransparency = 1
+			})
 
 			task.wait(0.1)
 			TweenService:Create(sectLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
