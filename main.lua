@@ -39,16 +39,6 @@ SeizureUI.Themes = {
 		CheckboxOff = Color3.fromRGB(45, 70, 100),
 		Divider = Color3.fromRGB(45, 70, 100),
 	},
-	Neon = {
-		Background = Color3.fromRGB(10, 10, 20),
-		ElementBackground = Color3.fromRGB(20, 20, 40),
-		ElementHover = Color3.fromRGB(30, 30, 60),
-		TextPrimary = Color3.fromRGB(0, 255, 150),
-		TextSecondary = Color3.fromRGB(0, 180, 120),
-		Accent = Color3.fromRGB(255, 0, 200),
-		CheckboxOff = Color3.fromRGB(40, 40, 80),
-		Divider = Color3.fromRGB(40, 40, 80),
-	},
 	Sunset = {
 		Background = Color3.fromRGB(40, 25, 20),
 		ElementBackground = Color3.fromRGB(70, 40, 30),
