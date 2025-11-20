@@ -8,13 +8,23 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 
 local function getParent()
-	if gethui then
-		return gethui()
-	elseif RunService:IsStudio() then
-		return Players.LocalPlayer:WaitForChild("PlayerGui")
-	else
-		return CoreGui
+	local success, result = pcall(function()
+		if gethui then
+			return gethui()
+		end
+	end)
+	if success and result then
+		return result
 	end
+	
+	success, result = pcall(function()
+		return game:GetService("CoreGui")
+	end)
+	if success and result then
+		return result
+	end
+	
+	return Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
 function SeizureUI:CreateWindow(config)
@@ -496,6 +506,31 @@ function SeizureUI:CreateWindow(config)
 			TweenService:Create(line, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 
 			return divFrame
+		end
+
+		function Tab:CreateSection(sectionConfig)
+			local sectFrame = Instance.new("Frame")
+			sectFrame.Name = "Section"
+			sectFrame.Parent = tabContent
+			sectFrame.BackgroundTransparency = 1
+			sectFrame.Size = UDim2.new(1, 0, 0, 28)
+
+			local sectLabel = Instance.new("TextLabel")
+			sectLabel.Parent = sectFrame
+			sectLabel.BackgroundTransparency = 1
+			sectLabel.Size = UDim2.new(1, 0, 1, 0)
+			sectLabel.Font = Enum.Font.GothamMedium
+			sectLabel.Text = sectionConfig.Name or "Section"
+			sectLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			sectLabel.TextSize = sectionConfig.Size or 15
+			sectLabel.TextXAlignment = sectionConfig.Side == "Right" and Enum.TextXAlignment.Right or Enum.TextXAlignment.Left
+			sectLabel.TextYAlignment = Enum.TextYAlignment.Center
+			sectLabel.TextTransparency = 1
+
+			task.wait(0.1)
+			TweenService:Create(sectLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+
+			return sectFrame
 		end
 
 		return Tab
